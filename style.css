@@ -1,0 +1,80 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    color: #333;
+    background-color: #f9f9f9;
+}
+
+header, footer {
+    text-align: center;
+    padding: 1rem;
+    background: #4b79a1; /* Dark blue */
+    color: white;
+}
+
+.logo {
+    width: 600px;
+    height: auto;
+}
+
+h1 {
+    margin: 0;
+    font-size: 2rem;
+}
+
+main {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    border-bottom: 2px solid #4b79a1;
+    margin-bottom: 0.5rem;
+    color: #4b79a1;
+}
+
+ul {
+    list-style: disc;
+    margin: 0 0 1rem 1.5rem;
+}
+
+footer p {
+    margin: 0;
+}
+
+.social-links {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 0;  /* Changed from left: 0 to right: 0 */
+    display: flex;
+    flex-direction: column;
+}
+
+.social-button {
+    display: block;
+    margin: 5px 0;
+    padding: 10px;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+.linkedin {
+    background-color: #0077B5;
+}
+
+.email {
+    background-color: #D14836;
+}
+
+.github {
+    background-color: #333; /* GitHub's brand color */
+}
