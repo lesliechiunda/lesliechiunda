@@ -10,11 +10,14 @@
 - 🌍 Based in Wrocław, Poland
 
 ### 🛠 Skills & Technologies
-- 🔒 Cybersecurity
-- 🎨 Graphic Design
-- 💻 UI/UX Design
-- 📊 Full Stack Development
-- 🌐 Web Development
+- 🔒 Cybersecurity 
+- 💻 UI/UX Design | Graphic Design | Figma | Adobe Create Suite
+- 🌐 Full Stack Development | Mobile and Web Development | Python | Javascript | React 
+
+## 📊 Exprience 
+- Software design      - https://finlitapp.co.za/
+- Full stack developer - https://www.passpapers.co.za/
+- Graphic Designer     - https://thesmmebottomline.co.za/
 
 ### 📫 Connect With Me
 [![LinkedIn](https://img.shields.io/badge/-LinkedIn-0077B5?style=flat&logo=LinkedIn&logoColor=white)](https://linkedin.com/in/lesliechiunda)
