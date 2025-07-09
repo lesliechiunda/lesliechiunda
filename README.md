@@ -16,17 +16,11 @@
 
 ## 📊 Exprience 
 - Software design      - https://finlitapp.co.za/
-- Full stack developer - https://www.passpapers.co.za/
+- Full stack developer - https://www.passpapers.co.za/ alternatively - https://v0-pass-papers-app-rho.vercel.app/
 - Graphic Designer     - https://thesmmebottomline.co.za/
 
 ### 📫 Connect With Me
 [![LinkedIn](https://img.shields.io/badge/-LinkedIn-0077B5?style=flat&logo=LinkedIn&logoColor=white)](https://linkedin.com/in/lesliechiunda)
 [![Email](https://img.shields.io/badge/-Email-D14836?style=flat&logo=Gmail&logoColor=white)](mailto:lesliechiunda@outlook.com)
 
-### 📊 GitHub Stats
-![Leslie's GitHub stats](https://github-readme-stats.vercel.app/api?username=lesliechiunda&show_icons=true&theme=radical)
 
----
-<p align="center">
-  <i>Let's connect and collaborate!</i>
-</p>
