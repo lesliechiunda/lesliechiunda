@@ -2,7 +2,7 @@
 ## Cybersecurity Student & Graphic Designer
 
 ### 👋 About Me
-- 🔭 Currently studying Cybersecurity BSc (Hons) at Coventry University
+- 🔭 Graduated Cybersecurity BSc (Hons) at Coventry University
 - 💼 Working as a Graphic Designer at The SMME Bottomline
 - 🎨 UI/UX Designer for FinLit App
 - 📚 Working on a personal project ICP
@@ -15,8 +15,8 @@
 - 🌐 Full Stack Development | Mobile and Web Development | Python | Javascript | React 
 
 ## 📊 Exprience 
-- Software design      - https://finlitapp.co.za/
-- Full stack developer - https://www.passpapers.co.za/ alternatively - https://v0-pass-papers-app-rho.vercel.app/
+- Software designer    - https://finlitapp.co.za/ application at https://finlitapp.dev/
+- Full stack developer - https://www.passpapers.vercel.app/
 - Graphic Designer     - https://thesmmebottomline.co.za/
 
 ### 📫 Connect With Me
