@@ -1,5 +1,5 @@
 # Leslie Chiunda
-## Cybersecurity Student & Graphic Designer
+## Cybersecurity Student & Full Stack Developer
 
 ### 👋 About Me
 - 🔭 Graduated Cybersecurity BSc (Hons) at Coventry University
