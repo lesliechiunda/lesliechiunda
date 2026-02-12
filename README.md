@@ -12,12 +12,11 @@
 ### 🛠 Skills & Technologies
 - 🔒 Cybersecurity 
 - 💻 UI/UX Design | Graphic Design | Figma | Adobe Create Suite
-- 🌐 Full Stack Development | Mobile and Web Development | Python | Javascript | React 
+- 🌐 Full Stack Development | Mobile and Web Development | Python | Javascript | React
 
-## 📊 Exprience 
-- Software designer    - https://finlitapp.co.za/ application at https://finlitapp.dev/
-- Full stack developer - https://www.passpapers.vercel.app/
-- Graphic Designer     - https://thesmmebottomline.co.za/
+## 📊 My Portfolio 
+
+- www.lesliechiunda.com
 
 ### 📫 Connect With Me
 [![LinkedIn](https://img.shields.io/badge/-LinkedIn-0077B5?style=flat&logo=LinkedIn&logoColor=white)](https://linkedin.com/in/lesliechiunda)
