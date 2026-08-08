@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { chatGPTSignOutPath } from "../chatgpt-auth";
 import { requireAdmin } from "../../lib/admin-auth";
-import { listBusinesses } from "../../lib/repository";
+import { listBusinesses, listPortfolioProjects } from "../../lib/repository";
 import AdminCRM from "./AdminCRM";
+import AdminProjects from "./AdminProjects";
 import "./admin.css";
 
 export const metadata: Metadata = { title: "Admin workspace", robots: { index: false, follow: false } };
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
   const admin = await requireAdmin("/admin");
-  const businesses = await listBusinesses();
+  const [businesses, projects] = await Promise.all([listBusinesses(), listPortfolioProjects({ includeUnpublished: true })]);
   return (
     <main className="admin-root">
       <aside className="admin-sidebar">
@@ -19,6 +20,7 @@ export default async function AdminPage() {
         <nav aria-label="Admin navigation">
           <a href="#overview" className="active"><span>⌂</span>Overview</a>
           <a href="#pipeline"><span>◇</span>Businesses</a>
+          <a href="#projects"><span>▦</span>Projects</a>
           <a href="#pipeline"><span>▱</span>Previews</a>
           <a href="#pipeline"><span>↗</span>Outreach</a>
           <a href="#pipeline"><span>✓</span>Approvals</a>
@@ -33,6 +35,7 @@ export default async function AdminPage() {
       <div className="admin-main" id="overview">
         {admin.localPreview ? <div className="preview-access-note">Local preview mode. Production access stays blocked until <strong>ADMIN_EMAILS</strong> is configured.</div> : null}
         <AdminCRM initialBusinesses={businesses} />
+        <div className="admin-content-section"><AdminProjects initialProjects={projects} /></div>
         <section className="agent-hooks" id="agent-hooks">
           <div><p className="admin-kicker">Future workflow hooks</p><h2>Ready for an agent.<br />Waiting for your rules.</h2></div>
           <div className="hook-list">

@@ -1,8 +1,10 @@
-import { desc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { getDb } from "../db";
-import { agentJobs, approvals, businesses, mediaAssets } from "../db/schema";
+import { agentJobs, approvals, businesses, mediaAssets, portfolioProjects } from "../db/schema";
+import { projects as staticProjects } from "../app/data";
 
 export type BusinessRecord = typeof businesses.$inferSelect;
+export type PortfolioProjectRecord = typeof portfolioProjects.$inferSelect;
 export type BusinessInput = Partial<Omit<typeof businesses.$inferInsert, "id" | "createdAt" | "updatedAt" | "lastActivityAt">> & {
   name: string;
   slug: string;
@@ -40,6 +42,44 @@ export const demoBusinesses: BusinessRecord[] = [
     lastActivityAt: "2026-08-08 08:15:00", createdAt: "2026-08-08 08:15:00", updatedAt: "2026-08-08 08:15:00",
   },
 ];
+
+const demoProjects: PortfolioProjectRecord[] = staticProjects.map((project, index) => ({
+  id: `project_${project.title.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "")}`,
+  title: project.title,
+  category: project.category,
+  summary: project.summary,
+  href: project.href,
+  image: project.image ?? null,
+  tone: project.tone,
+  published: true,
+  sortOrder: index,
+  createdAt: "2026-08-08 10:00:00",
+  updatedAt: "2026-08-08 10:00:00",
+}));
+
+export async function listPortfolioProjects(options: { includeUnpublished?: boolean } = {}) {
+  try {
+    const db = getDb();
+    await db.insert(portfolioProjects).values(demoProjects).onConflictDoNothing();
+    const rows = await db.select().from(portfolioProjects).orderBy(asc(portfolioProjects.sortOrder), asc(portfolioProjects.title));
+    return options.includeUnpublished ? rows : rows.filter((project) => project.published);
+  } catch {
+    return options.includeUnpublished ? demoProjects : demoProjects.filter((project) => project.published);
+  }
+}
+
+export async function createPortfolioProject(input: Pick<PortfolioProjectRecord, "title" | "category" | "summary" | "href" | "image" | "tone" | "published" | "sortOrder">) {
+  const db = getDb();
+  const now = new Date().toISOString();
+  const [created] = await db.insert(portfolioProjects).values({ id: crypto.randomUUID(), ...input, createdAt: now, updatedAt: now }).returning();
+  return created;
+}
+
+export async function updatePortfolioProject(id: string, values: Partial<Omit<PortfolioProjectRecord, "id" | "createdAt" | "updatedAt">>) {
+  const db = getDb();
+  const [updated] = await db.update(portfolioProjects).set({ ...values, updatedAt: new Date().toISOString() }).where(eq(portfolioProjects.id, id)).returning();
+  return updated;
+}
 
 export async function seedBusinesses() {
   const db = getDb();

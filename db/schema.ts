@@ -37,6 +37,24 @@ export const businesses = sqliteTable(
   ],
 );
 
+export const portfolioProjects = sqliteTable(
+  "portfolio_projects",
+  {
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    category: text("category").notNull().default("Website"),
+    summary: text("summary").notNull().default(""),
+    href: text("href").notNull(),
+    image: text("image"),
+    tone: text("tone").notNull().default("lime"),
+    published: integer("published", { mode: "boolean" }).notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(0),
+    createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [index("idx_portfolio_projects_order").on(table.published, table.sortOrder)],
+);
+
 export const mediaAssets = sqliteTable(
   "media_assets",
   {
