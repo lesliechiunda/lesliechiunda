@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { chatGPTSignOutPath } from "../chatgpt-auth";
 import { requireAdmin } from "../../lib/admin-auth";
-import { listBusinesses, listPortfolioProjects } from "../../lib/repository";
+import { listAgentJobs, listBusinesses, listPortfolioProjects } from "../../lib/repository";
 import AdminCRM from "./AdminCRM";
 import AdminProjects from "./AdminProjects";
 import "./admin.css";
@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
   const admin = await requireAdmin("/admin");
-  const [businesses, projects] = await Promise.all([listBusinesses(), listPortfolioProjects({ includeUnpublished: true })]);
+  const [businesses, projects, jobs] = await Promise.all([listBusinesses(), listPortfolioProjects({ includeUnpublished: true }), listAgentJobs()]);
   return (
     <main className="admin-root">
       <aside className="admin-sidebar">
@@ -24,7 +24,7 @@ export default async function AdminPage() {
           <a href="#pipeline"><span>▱</span>Previews</a>
           <a href="#pipeline"><span>↗</span>Outreach</a>
           <a href="#pipeline"><span>✓</span>Approvals</a>
-          <a href="#agent-hooks"><span>✦</span>Agent queue <i>0</i></a>
+          <a href="#agent-hooks"><span>✦</span>Agent queue <i>{jobs.length}</i></a>
         </nav>
         <div className="admin-sidebar-bottom">
           <Link href="/" target="_blank">View public site ↗</Link>
@@ -37,11 +37,11 @@ export default async function AdminPage() {
         <AdminCRM initialBusinesses={businesses} />
         <div className="admin-content-section"><AdminProjects initialProjects={projects} /></div>
         <section className="agent-hooks" id="agent-hooks">
-          <div><p className="admin-kicker">Future workflow hooks</p><h2>Ready for an agent.<br />Waiting for your rules.</h2></div>
+          <div><p className="admin-kicker">Workflow foundation</p><h2>Queue work now.<br />Automate later.</h2><p className="queue-count">{jobs.length} internal {jobs.length === 1 ? "item" : "items"} waiting for your review.</p></div>
           <div className="hook-list">
             <article><span>01</span><div><h3>Business discovery intake</h3><p>An authenticated endpoint can accept researched businesses and create needs-review records.</p></div><b>READY</b></article>
-            <article><span>02</span><div><h3>Preview build request</h3><p>The queue model is ready; execution remains blocked behind an approval record.</p></div><b>LOCKED</b></article>
-            <article><span>03</span><div><h3>Outreach draft</h3><p>Status and event history are modeled. No mail provider or send action is connected.</p></div><b>LOCKED</b></article>
+            <article><span>02</span><div><h3>Preview build request</h3><p>Queue a request from any listing. It creates an internal item and never publishes automatically.</p></div><b>READY</b></article>
+            <article><span>03</span><div><h3>Outreach draft</h3><p>Create a stored draft from any listing. No mail provider or send action is connected.</p></div><b>READY</b></article>
           </div>
         </section>
       </div>

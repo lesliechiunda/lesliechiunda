@@ -5,6 +5,7 @@ import { projects as staticProjects } from "../app/data";
 
 export type BusinessRecord = typeof businesses.$inferSelect;
 export type PortfolioProjectRecord = typeof portfolioProjects.$inferSelect;
+export type AgentJobRecord = typeof agentJobs.$inferSelect;
 export type BusinessInput = Partial<Omit<typeof businesses.$inferInsert, "id" | "createdAt" | "updatedAt" | "lastActivityAt">> & {
   name: string;
   slug: string;
@@ -164,6 +165,61 @@ export async function getMediaAsset(id: string) {
   const db = getDb();
   const [asset] = await db.select().from(mediaAssets).where(eq(mediaAssets.id, id)).limit(1);
   return asset ?? null;
+}
+
+export async function createAdminWorkflowJob(input: {
+  businessId: string;
+  jobType: "preview_build_request" | "outreach_draft";
+  actorEmail: string;
+}) {
+  const db = getDb();
+  const now = new Date().toISOString();
+  const id = crypto.randomUUID();
+  const [business] = await db.select().from(businesses).where(eq(businesses.id, input.businessId)).limit(1);
+  if (!business) return null;
+
+  const actions = [
+    db.insert(agentJobs).values({
+      id,
+      businessId: business.id,
+      jobType: input.jobType,
+      status: "queued",
+      payload: JSON.stringify({ requestedBy: input.actorEmail, businessName: business.name }),
+      requiresApproval: true,
+      createdAt: now,
+      updatedAt: now,
+    }),
+    db.update(businesses).set({
+      previewStatus: input.jobType === "preview_build_request" && business.previewStatus === "not_started" ? "draft" : business.previewStatus,
+      outreachStatus: input.jobType === "outreach_draft" ? "draft_ready" : business.outreachStatus,
+      updatedAt: now,
+      lastActivityAt: now,
+    }).where(eq(businesses.id, business.id)),
+  ];
+
+  if (input.jobType === "outreach_draft") {
+    actions.push(db.insert(outreachEvents).values({
+      id: crypto.randomUUID(),
+      businessId: business.id,
+      channel: "email",
+      status: "draft",
+      subject: `A website idea for ${business.name}`,
+      body: `Hi ${business.contactName || "there"},\n\nI put together an early website idea for ${business.name}. It is only a draft for your review—nothing has been published as an official business website or sent on your behalf.`,
+      createdAt: now,
+    }));
+  }
+
+  await db.batch(actions);
+  return { id, businessId: business.id, jobType: input.jobType };
+}
+
+export async function listAgentJobs(): Promise<AgentJobRecord[]> {
+  try {
+    const db = getDb();
+    return await db.select().from(agentJobs).orderBy(desc(agentJobs.updatedAt));
+  } catch {
+    return [];
+  }
 }
 
 export async function ingestAgentDiscovery(input: {

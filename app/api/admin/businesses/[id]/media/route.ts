@@ -24,10 +24,15 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
 
   const businessId = (await context.params).id;
   const objectKey = `businesses/${businessId}/${crypto.randomUUID()}.${extension}`;
-  await env.MEDIA.put(objectKey, await file.arrayBuffer(), {
-    httpMetadata: { contentType: file.type, cacheControl: "public, max-age=31536000, immutable" },
-    customMetadata: { businessId, uploadedBy: admin.email },
-  });
+  if (!env.MEDIA) return NextResponse.json({ error: "Image storage is not available yet. Please try again shortly." }, { status: 503 });
+  try {
+    await env.MEDIA.put(objectKey, await file.arrayBuffer(), {
+      httpMetadata: { contentType: file.type, cacheControl: "public, max-age=31536000, immutable" },
+      customMetadata: { businessId, uploadedBy: admin.email },
+    });
+  } catch {
+    return NextResponse.json({ error: "The image could not be uploaded. Please try again." }, { status: 502 });
+  }
   try {
     const asset = await createMediaAsset({
       businessId, objectKey, filename: file.name.slice(0, 180), contentType: file.type,
