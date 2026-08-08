@@ -108,6 +108,8 @@ export function ConceptCard({ concept }: { concept: Concept }) {
           ["--concept-accent" as string]: concept.accent,
         }}
       >
+        {concept.image ? <img className="concept-card-image" src={concept.image} alt={`${concept.name} website concept`} /> : null}
+        {concept.image ? <span className="concept-image-shade" aria-hidden="true" /> : null}
         <div className="concept-mini-nav">
           <strong>{concept.name}</strong>
           <span>Menu &nbsp; About &nbsp; Book</span>
@@ -155,6 +157,7 @@ export async function ConceptGrid({ limit }: { limit?: number }) {
     category: business.industry,
     phone: business.contactPhone || "+27 00 000 0000",
     services: (() => { try { return JSON.parse(business.services) as string[]; } catch { return []; } })(),
+    image: business.heroAssetId ? `/api/media/${business.heroAssetId}` : `/concept-${business.slug}.jpg`,
     ...palette[index % palette.length],
   }));
   return (

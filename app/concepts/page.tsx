@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ConceptGrid, Footer, Header } from "../components";
 
 export const metadata: Metadata = { title: "Website concepts" };
+export const dynamic = "force-dynamic";
 
 export default function ConceptsPage() {
   return (

@@ -20,6 +20,7 @@ export type Concept = {
   background: string;
   foreground: string;
   services: string[];
+  image?: string;
 };
 
 export const projects: Project[] = [
@@ -29,7 +30,7 @@ export const projects: Project[] = [
     summary:
       "A gamified platform helping South African learners build practical money skills through lessons, challenges and real-world rewards.",
     href: "https://www.finlit.dev/",
-    image: "/project-finlit.png",
+    image: "/project-finlit.jpg",
     tone: "lime",
   },
   {
@@ -47,7 +48,7 @@ export const projects: Project[] = [
     summary:
       "A polished storefront and appointment experience for a beauty professional selling products and services online.",
     href: "https://kaharibeauty.com/",
-    image: "/project-kahari.png",
+    image: "/project-kahari.jpg",
     tone: "clay",
   },
   {
@@ -65,7 +66,17 @@ export const projects: Project[] = [
     summary:
       "A fast, focused repository that helps South African learners find past NSC examination papers and marking guides.",
     href: "https://passpapers.co.za/landing",
+    image: "/project-pass-papers.jpg",
     tone: "blue",
+  },
+  {
+    title: "Anna Okaria",
+    category: "Fashion e-commerce",
+    summary:
+      "A refined editorial storefront that gives a South African fashion label room for campaigns, collections and confident online shopping.",
+    href: "https://annaokaria.com/",
+    image: "/project-anna-okaria.jpg",
+    tone: "clay",
   },
 ];
 
