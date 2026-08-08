@@ -1,4 +1,4 @@
-import { asc, desc, eq } from "drizzle-orm";
+import { asc, count, desc, eq } from "drizzle-orm";
 import { getDb } from "../db";
 import { agentJobs, approvals, businesses, mediaAssets, portfolioProjects } from "../db/schema";
 import { projects as staticProjects } from "../app/data";
@@ -61,7 +61,8 @@ const demoProjects: PortfolioProjectRecord[] = staticProjects.map((project, inde
 export async function listPortfolioProjects(options: { includeUnpublished?: boolean } = {}) {
   try {
     const db = getDb();
-    await db.insert(portfolioProjects).values(demoProjects).onConflictDoNothing();
+    const [existing] = await db.select({ value: count() }).from(portfolioProjects);
+    if (!existing?.value) await db.insert(portfolioProjects).values(demoProjects).onConflictDoNothing();
     const rows = await db.select().from(portfolioProjects).orderBy(asc(portfolioProjects.sortOrder), asc(portfolioProjects.title));
     return options.includeUnpublished ? rows : rows.filter((project) => project.published);
   } catch {
@@ -82,16 +83,23 @@ export async function updatePortfolioProject(id: string, values: Partial<Omit<Po
   return updated;
 }
 
+export async function deletePortfolioProject(id: string) {
+  const db = getDb();
+  const [deleted] = await db.delete(portfolioProjects).where(eq(portfolioProjects.id, id)).returning();
+  return deleted ?? null;
+}
+
 export async function seedBusinesses() {
   const db = getDb();
-  await db.insert(businesses).values(demoBusinesses).onConflictDoNothing();
+  const [existing] = await db.select({ value: count() }).from(businesses);
+  if (!existing?.value) await db.insert(businesses).values(demoBusinesses).onConflictDoNothing();
 }
 
 export async function listBusinesses(): Promise<BusinessRecord[]> {
   try {
     const db = getDb();
     await seedBusinesses();
-    return await db.select().from(businesses).orderBy(desc(businesses.updatedAt));
+    return await db.select().from(businesses).orderBy(asc(businesses.priority), desc(businesses.updatedAt));
   } catch (error) {
     console.warn("D1 is not ready; rendering local preview CRM data.", error);
     return demoBusinesses;
@@ -165,6 +173,24 @@ export async function getMediaAsset(id: string) {
   const db = getDb();
   const [asset] = await db.select().from(mediaAssets).where(eq(mediaAssets.id, id)).limit(1);
   return asset ?? null;
+}
+
+export async function removeMediaAsset(id: string, businessId: string) {
+  const db = getDb();
+  const [asset] = await db.select().from(mediaAssets).where(eq(mediaAssets.id, id)).limit(1);
+  if (!asset || asset.businessId !== businessId) return null;
+  await db.batch([
+    db.update(businesses).set({ heroAssetId: null, updatedAt: new Date().toISOString() }).where(eq(businesses.id, businessId)),
+    db.delete(mediaAssets).where(eq(mediaAssets.id, id)),
+  ]);
+  return asset;
+}
+
+export async function deleteBusiness(id: string) {
+  const db = getDb();
+  const assets = await db.select().from(mediaAssets).where(eq(mediaAssets.businessId, id));
+  const [deleted] = await db.delete(businesses).where(eq(businesses.id, id)).returning();
+  return deleted ? { business: deleted, assets } : null;
 }
 
 export async function createAdminWorkflowJob(input: {

@@ -1,7 +1,7 @@
 import { env } from "cloudflare:workers";
 import { NextResponse } from "next/server";
 import { getAdminForApi } from "../../../../../../lib/admin-auth";
-import { createMediaAsset } from "../../../../../../lib/repository";
+import { createMediaAsset, removeMediaAsset } from "../../../../../../lib/repository";
 
 const allowedTypes: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -42,5 +42,20 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   } catch {
     await env.MEDIA.delete(objectKey);
     return NextResponse.json({ error: "Could not attach the image to this listing." }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+  const admin = await getAdminForApi();
+  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const assetId = new URL(request.url).searchParams.get("assetId");
+  if (!assetId) return NextResponse.json({ error: "Image id is required." }, { status: 400 });
+  try {
+    const asset = await removeMediaAsset(assetId, (await context.params).id);
+    if (!asset) return NextResponse.json({ error: "Image not found." }, { status: 404 });
+    if (env.MEDIA) await env.MEDIA.delete(asset.objectKey);
+    return NextResponse.json({ deleted: true });
+  } catch {
+    return NextResponse.json({ error: "Could not remove the image." }, { status: 503 });
   }
 }

@@ -1,6 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getConcept } from "../../data";
 import { getBusinessBySlug } from "../../../lib/repository";
@@ -93,7 +92,7 @@ export default async function PreviewPage({ params }: Props) {
         <div><p className="business-label">Find us</p><h2>{concept.location}</h2></div>
         <div><p>Tuesday—Sunday<br />Lunch & evening</p><a href={`tel:${concept.phone.replace(/\s/g, "")}`}>{concept.phone}</a></div>
       </section>
-      <footer className="business-footer"><strong>{concept.name}</strong><Link href="/concepts">A Leslie Chiunda website concept ↗</Link></footer>
+      <footer className="business-footer"><strong>{concept.name}</strong><a href="/concepts">A Leslie Chiunda website concept ↗</a></footer>
     </main>
   );
 }
