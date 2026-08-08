@@ -48,6 +48,8 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
   const [createForm, setCreateForm] = useState(emptyForm);
   const [form, setForm] = useState<ListingForm>(initialBusinesses[0] ? toForm(initialBusinesses[0]) : emptyForm);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [workflowRunning, setWorkflowRunning] = useState(false);
   const [message, setMessage] = useState("");
   const selected = records.find((record) => record.id === selectedId) ?? records[0];
 
@@ -113,7 +115,7 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
 
   async function uploadImage() {
     if (!selected || !uploadFile) return;
-    setSaving(true); setMessage("");
+    setUploading(true); setMessage(`Uploading ${uploadFile.name}…`);
     const data = new FormData(); data.set("file", uploadFile); data.set("altText", `${selected.name} listing image`);
     try {
       const response = await fetch(`/api/admin/businesses/${selected.id}/media`, { method: "POST", body: data });
@@ -122,7 +124,21 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
       setRecords((current) => current.map((record) => record.id === selected.id ? { ...record, heroAssetId: payload.asset!.id } : record));
       setUploadFile(null); setMessage("Image uploaded and attached.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Upload failed."); }
-    finally { setSaving(false); }
+    finally { setUploading(false); }
+  }
+
+  async function queueWorkflow(jobType: "preview_build_request" | "outreach_draft") {
+    if (!selected) return;
+    setWorkflowRunning(true); setMessage("");
+    try {
+      const response = await fetch(`/api/admin/businesses/${selected.id}/workflow`, {
+        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jobType }),
+      });
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "Could not add workflow item.");
+      setMessage(jobType === "preview_build_request" ? "Preview request added to the queue. It will not publish automatically." : "Outreach draft created. It will not be sent automatically.");
+    } catch (error) { setMessage(error instanceof Error ? error.message : "Could not add workflow item."); }
+    finally { setWorkflowRunning(false); }
   }
 
   const counts = {
@@ -186,7 +202,8 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
               <Field label="Contact phone" value={form.contactPhone} onChange={(v) => setField("contactPhone", v)} />
               <TextField label="Internal notes" value={form.notes} onChange={(v) => setField("notes", v)} />
             </div>
-            <div className="media-upload"><label>Listing image<input type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => setUploadFile(event.target.files?.[0] ?? null)} /></label><button type="button" disabled={!uploadFile || saving} onClick={uploadImage}>Upload image</button><small>JPG, PNG, WebP or AVIF · maximum 8 MB</small></div>
+            <div className="media-upload"><label>Listing image<input type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => setUploadFile(event.target.files?.[0] ?? null)} /></label><button type="button" disabled={!uploadFile || uploading} onClick={uploadImage}>{uploading ? "Uploading…" : "Upload image"}</button><small>{uploadFile ? `${uploadFile.name} ready to upload` : "JPG, PNG, WebP or AVIF · maximum 8 MB"}</small></div>
+            <div className="workflow-actions"><p className="admin-kicker">Safe workflow actions</p><button type="button" disabled={workflowRunning} onClick={() => queueWorkflow("preview_build_request")}>{workflowRunning ? "Working…" : "Queue preview request"}</button><button type="button" disabled={workflowRunning} onClick={() => queueWorkflow("outreach_draft")}>Create outreach draft</button><small>These create internal queue items only. They do not publish a site or send email.</small></div>
             <div className="workflow-controls workflow-controls--row">
               <label>Preview<select disabled={saving} value={selected.previewStatus} onChange={(event) => patchBusiness(selected.id, { previewStatus: event.target.value })}>{previewOptions.map((option) => <option key={option} value={option}>{labels[option]}</option>)}</select></label>
               <label>Outreach<select disabled={saving} value={selected.outreachStatus} onChange={(event) => patchBusiness(selected.id, { outreachStatus: event.target.value })}>{outreachOptions.map((option) => <option key={option} value={option}>{labels[option]}</option>)}</select></label>

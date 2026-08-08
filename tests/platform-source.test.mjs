@@ -29,3 +29,14 @@ test("outbound automation remains disabled", async () => {
   assert.match(adminPage, /No mail provider or send action is connected/);
   assert.doesNotMatch(adminPage, /sendEmail|sendMail/);
 });
+
+test("admin can queue safe internal workflow work without sending anything", async () => {
+  const [queueRoute, admin] = await Promise.all([
+    read("app/api/admin/businesses/[id]/workflow/route.ts"), read("app/admin/AdminCRM.tsx"),
+  ]);
+  assert.match(queueRoute, /getAdminForApi/);
+  assert.match(queueRoute, /createAdminWorkflowJob/);
+  assert.match(admin, /Queue preview request/);
+  assert.match(admin, /Create outreach draft/);
+  assert.match(admin, /will not be sent automatically/);
+});

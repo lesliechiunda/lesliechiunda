@@ -80,6 +80,11 @@
 .media-upload input { max-width: 210px; color: #4f554d; font-size: 9px; }
 .media-upload button { min-height: 32px; padding: 0 10px; border: 1px solid #bfc5ba; border-radius: 4px; background: #fff; font-size: 9px; cursor: pointer; }
 .media-upload small { grid-column: 1 / 3; color: #969b93; font-size: 8px; }
+.workflow-actions { margin: 16px 0; padding: 13px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; border: 1px solid #dfe3dc; border-radius: 6px; background: #f8f9f6; }
+.workflow-actions .admin-kicker { width: 100%; margin-bottom: 1px; }
+.workflow-actions button { min-height: 31px; padding: 0 10px; border: 1px solid #bfc5ba; border-radius: 4px; background: #fff; color: #343932; font-size: 9px; font-weight: 700; cursor: pointer; }
+.workflow-actions button:hover { background: #edf2e3; }.workflow-actions button:disabled { opacity: .55; cursor: wait; }
+.workflow-actions small { width: 100%; color: #81877e; font-size: 8px; line-height: 1.35; }
 .editor-actions { margin-top: 16px; display: flex; justify-content: space-between; gap: 8px; }
 .editor-actions a { display: inline-flex; align-items: center; }
 .archive-button { min-height: 36px; padding: 0 12px; border: 1px solid #d0d5cc; border-radius: 5px; background: #fff; color: #71776e; font-size: 9px; cursor: pointer; }
@@ -104,6 +109,7 @@
 .safety-note p { margin: 6px 0 0; color: #6d7469; font-size: 8px; line-height: 1.5; }
 .agent-hooks { padding: 80px 4vw 100px; background: #20231e; color: #f0f1eb; display: grid; grid-template-columns: 40% 1fr; gap: 8%; }
 .agent-hooks h2 { margin: 10px 0 0; font-size: clamp(35px, 4vw, 58px); line-height: .94; letter-spacing: -.06em; }
+.queue-count { margin: 18px 0 0; color: #aab0a4; font-size: 10px; }
 .hook-list { border-top: 1px solid #4d5249; }
 .hook-list article { display: grid; grid-template-columns: 28px 1fr auto; gap: 14px; padding: 20px 0; border-bottom: 1px solid #4d5249; }
 .hook-list span { font: 8px var(--font-geist-mono), monospace; color: #8e948b; }
