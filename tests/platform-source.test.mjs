@@ -11,7 +11,7 @@ test("portfolio records power both admin and the public project grid", async () 
   assert.match(schema, /portfolioProjects/);
   assert.match(repository, /listPortfolioProjects/);
   assert.match(admin, /Show on public website/);
-  assert.match(components, /await listPortfolioProjects/);
+  assert.match(components, /listPortfolioProjects\(\)/);
 });
 
 test("admin API remains protected and supports portfolio create and update", async () => {
@@ -44,9 +44,20 @@ test("admin can queue safe internal workflow work without sending anything", asy
 test("public navigation uses reliable document links", async () => {
   const components = await read("app/components.tsx");
   assert.match(components, /<a href="\/work">Work<\/a>/);
-  assert.match(components, /<a href="\/concepts">Concepts<\/a>/);
+  assert.doesNotMatch(components, /href="\/concepts"/);
   assert.match(components, /<a href="\/#about">About<\/a>/);
   assert.doesNotMatch(components, /from "next\/link"/);
+});
+
+test("concepts are consolidated into grouped work without image overlays", async () => {
+  const [components, work, concepts] = await Promise.all([
+    read("app/components.tsx"), read("app/work/page.tsx"), read("app/concepts/page.tsx"),
+  ]);
+  assert.match(components, /Business websites/);
+  assert.match(components, /businessProjects/);
+  assert.doesNotMatch(components, /className="project-number"/);
+  assert.match(work, /workGroups\.map/);
+  assert.match(concepts, /redirect\("\/work"\)/);
 });
 
 test("admin exposes create update reorder and delete controls", async () => {

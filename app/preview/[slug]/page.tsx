@@ -51,9 +51,9 @@ export default async function PreviewPage({ params }: Props) {
       }}
     >
       <aside className="concept-banner">
-        <span>Website concept by Leslie Chiunda</span>
-        <p>This is an illustrative preview—not yet the business&apos;s official website.</p>
-        <a href={`mailto:lesliechiunda@outlook.com?subject=Claim%20${encodeURIComponent(concept.name)}%20website`}>Are you the owner? Claim this concept ↗</a>
+        <span>Website by Leslie Chiunda</span>
+        <p>Independent business preview</p>
+        <a href={`mailto:lesliechiunda@outlook.com?subject=${encodeURIComponent(concept.name)}%20website`}>Business owner? Contact Leslie ↗</a>
       </aside>
       <nav className="business-nav">
         <strong>{concept.name}</strong>
@@ -93,7 +93,7 @@ export default async function PreviewPage({ params }: Props) {
         <div><p className="business-label">Find us</p><h2>{concept.location}</h2></div>
         <div><p>Tuesday—Sunday<br />Lunch & evening</p><a href={`tel:${concept.phone.replace(/\s/g, "")}`}>{concept.phone}</a></div>
       </section>
-      <footer className="business-footer"><strong>{concept.name}</strong><a href="/concepts">A Leslie Chiunda website concept ↗</a></footer>
+      <footer className="business-footer"><strong>{concept.name}</strong><a href="/work">View Leslie Chiunda&apos;s work ↗</a></footer>
     </main>
   );
 }
