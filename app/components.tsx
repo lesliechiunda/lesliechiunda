@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { concepts, projects, type Concept, type Project } from "./data";
+import { concepts, type Concept, type Project } from "./data";
+import { listPortfolioProjects } from "../lib/repository";
 
 export function Header({ dark = false }: { dark?: boolean }) {
   return (
@@ -127,7 +128,8 @@ export function ConceptCard({ concept }: { concept: Concept }) {
   );
 }
 
-export function ProjectGrid({ limit }: { limit?: number }) {
+export async function ProjectGrid({ limit }: { limit?: number }) {
+  const projects = await listPortfolioProjects();
   return (
     <div className="project-grid">
       {projects.slice(0, limit).map((project, index) => (
