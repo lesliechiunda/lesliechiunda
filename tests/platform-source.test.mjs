@@ -40,3 +40,26 @@ test("admin can queue safe internal workflow work without sending anything", asy
   assert.match(admin, /Create outreach draft/);
   assert.match(admin, /will not be sent automatically/);
 });
+
+test("public navigation uses reliable document links", async () => {
+  const components = await read("app/components.tsx");
+  assert.match(components, /<a href="\/work">Work<\/a>/);
+  assert.match(components, /<a href="\/concepts">Concepts<\/a>/);
+  assert.match(components, /<a href="\/#about">About<\/a>/);
+  assert.doesNotMatch(components, /from "next\/link"/);
+});
+
+test("admin exposes create update reorder and delete controls", async () => {
+  const [crm, projects, businessRoute, projectRoute] = await Promise.all([
+    read("app/admin/AdminCRM.tsx"), read("app/admin/AdminProjects.tsx"),
+    read("app/api/admin/businesses/[id]/route.ts"), read("app/api/admin/projects/[id]/route.ts"),
+  ]);
+  assert.match(crm, /Choose image/);
+  assert.match(crm, /Remove current/);
+  assert.match(crm, /Delete listing/);
+  assert.match(crm, /Move up/);
+  assert.match(projects, /Delete project/);
+  assert.match(projects, /Move down/);
+  assert.match(businessRoute, /export async function DELETE/);
+  assert.match(projectRoute, /export async function DELETE/);
+});

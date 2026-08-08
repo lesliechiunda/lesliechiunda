@@ -1,23 +1,22 @@
-/* eslint-disable @next/next/no-img-element */
-import Link from "next/link";
+/* eslint-disable @next/next/no-img-element, @next/next/no-html-link-for-pages */
 import type { ReactNode } from "react";
-import { concepts, type Concept, type Project } from "./data";
-import { listPortfolioProjects } from "../lib/repository";
+import { type Concept, type Project } from "./data";
+import { listBusinesses, listPortfolioProjects } from "../lib/repository";
 
 export function Header({ dark = false }: { dark?: boolean }) {
   return (
     <header className={`site-header ${dark ? "site-header--dark" : ""}`}>
-      <Link href="/" className="wordmark" aria-label="Leslie Chiunda home">
+      <a href="/" className="wordmark" aria-label="Leslie Chiunda home">
         LC<span>®</span>
-      </Link>
+      </a>
       <nav aria-label="Main navigation">
-        <Link href="/work">Work</Link>
-        <Link href="/concepts">Concepts</Link>
-        <Link href="/#about">About</Link>
+        <a href="/work">Work</a>
+        <a href="/concepts">Concepts</a>
+        <a href="/#about">About</a>
       </nav>
-      <Link href="mailto:lesliechiunda@outlook.com" className="nav-cta">
+      <a href="mailto:lesliechiunda@outlook.com" className="nav-cta">
         Start a project <span aria-hidden="true">↗</span>
-      </Link>
+      </a>
     </header>
   );
 }
@@ -59,9 +58,9 @@ export function SectionHeading({
         <h2>{children}</h2>
       </div>
       {link ? (
-        <Link href={link.href} className="text-link">
+        <a href={link.href} className="text-link">
           {link.label} <span aria-hidden="true">↗</span>
-        </Link>
+        </a>
       ) : null}
     </div>
   );
@@ -100,7 +99,7 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
 
 export function ConceptCard({ concept }: { concept: Concept }) {
   return (
-    <Link href={`/preview/${concept.slug}`} className="concept-card">
+    <a href={`/preview/${concept.slug}`} className="concept-card">
       <div
         className="concept-canvas"
         style={{
@@ -124,7 +123,7 @@ export function ConceptCard({ concept }: { concept: Concept }) {
         </div>
         <span>Open live concept ↗</span>
       </div>
-    </Link>
+    </a>
   );
 }
 
@@ -139,7 +138,25 @@ export async function ProjectGrid({ limit }: { limit?: number }) {
   );
 }
 
-export function ConceptGrid({ limit }: { limit?: number }) {
+export async function ConceptGrid({ limit }: { limit?: number }) {
+  const palette = [
+    { accent: "#ff5a36", background: "#f2dfc7", foreground: "#28160f" },
+    { accent: "#0d66ff", background: "#e9f0e8", foreground: "#10291f" },
+    { accent: "#c8f16b", background: "#151713", foreground: "#f4f0e7" },
+  ];
+  const businesses = await listBusinesses();
+  const concepts: Concept[] = businesses.filter((business) => business.previewStatus !== "archived").map((business, index) => ({
+    slug: business.slug,
+    name: business.name,
+    eyebrow: business.eyebrow || `${business.industry} · ${business.city}`,
+    headline: business.headline || `${business.name}, made easier to discover.`,
+    summary: business.summary,
+    location: business.city,
+    category: business.industry,
+    phone: business.contactPhone || "+27 00 000 0000",
+    services: (() => { try { return JSON.parse(business.services) as string[]; } catch { return []; } })(),
+    ...palette[index % palette.length],
+  }));
   return (
     <div className="concept-grid">
       {concepts.slice(0, limit).map((concept) => (

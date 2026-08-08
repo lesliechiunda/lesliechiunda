@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
+import { env } from "cloudflare:workers";
 import { getAdminForApi } from "../../../../../lib/admin-auth";
-import { updateBusiness } from "../../../../../lib/repository";
+import { deleteBusiness, updateBusiness } from "../../../../../lib/repository";
 
 const allowed = new Set([
   "name", "slug", "industry", "city", "website", "websiteStatus", "previewStatus", "previewUrl",
@@ -30,5 +31,18 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     return NextResponse.json({ business });
   } catch {
     return NextResponse.json({ error: "The data store is not ready." }, { status: 503 });
+  }
+}
+
+export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) {
+  const admin = await getAdminForApi();
+  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const deleted = await deleteBusiness((await context.params).id);
+    if (!deleted) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (env.MEDIA && deleted.assets.length) await env.MEDIA.delete(deleted.assets.map((asset) => asset.objectKey));
+    return NextResponse.json({ deleted: true });
+  } catch {
+    return NextResponse.json({ error: "Could not delete the listing." }, { status: 503 });
   }
 }

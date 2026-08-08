@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAdminForApi } from "../../../../../lib/admin-auth";
-import { updatePortfolioProject } from "../../../../../lib/repository";
+import { deletePortfolioProject, updatePortfolioProject } from "../../../../../lib/repository";
 
 const allowed = new Set(["title", "category", "summary", "href", "image", "tone", "published", "sortOrder"]);
 
@@ -23,5 +23,17 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     return NextResponse.json({ project });
   } catch {
     return NextResponse.json({ error: "Could not update the project." }, { status: 503 });
+  }
+}
+
+export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) {
+  const admin = await getAdminForApi();
+  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const project = await deletePortfolioProject((await context.params).id);
+    if (!project) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ deleted: true });
+  } catch {
+    return NextResponse.json({ error: "Could not delete the project." }, { status: 503 });
   }
 }

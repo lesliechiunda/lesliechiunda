@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { BusinessRecord } from "../../lib/repository";
 
 const labels: Record<string, string> = {
@@ -39,7 +39,8 @@ function StatusPill({ value }: { value: string }) {
 }
 
 export default function AdminCRM({ initialBusinesses }: { initialBusinesses: BusinessRecord[] }) {
-  const [records, setRecords] = useState(initialBusinesses);
+  const orderRecords = (items: BusinessRecord[]) => [...items].sort((a, b) => a.priority - b.priority || b.updatedAt.localeCompare(a.updatedAt));
+  const [records, setRecords] = useState(orderRecords(initialBusinesses));
   const [selectedId, setSelectedId] = useState(initialBusinesses[0]?.id ?? "");
   const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
@@ -51,6 +52,7 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
   const [uploading, setUploading] = useState(false);
   const [workflowRunning, setWorkflowRunning] = useState(false);
   const [message, setMessage] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const selected = records.find((record) => record.id === selectedId) ?? records[0];
 
   const visible = useMemo(() => records.filter((record) => {
@@ -78,7 +80,7 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
       });
       const payload = (await response.json()) as { business?: BusinessRecord; error?: string };
       if (!response.ok || !payload.business) throw new Error(payload.error ?? "Update failed");
-      setRecords((current) => current.map((record) => record.id === id ? payload.business! : record));
+      setRecords((current) => orderRecords(current.map((record) => record.id === id ? payload.business! : record)));
       setMessage("Changes saved.");
       return payload.business;
     } catch (error) {
@@ -122,9 +124,40 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
       const payload = (await response.json()) as { asset?: { id: string }; error?: string };
       if (!response.ok || !payload.asset) throw new Error(payload.error ?? "Upload failed.");
       setRecords((current) => current.map((record) => record.id === selected.id ? { ...record, heroAssetId: payload.asset!.id } : record));
-      setUploadFile(null); setMessage("Image uploaded and attached.");
+      setUploadFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; setMessage("Image uploaded and attached.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Upload failed."); }
     finally { setUploading(false); }
+  }
+
+  async function removeImage() {
+    if (!selected?.heroAssetId || !window.confirm(`Remove the current image from ${selected.name}?`)) return;
+    setUploading(true); setMessage("Removing image…");
+    try {
+      const response = await fetch(`/api/admin/businesses/${selected.id}/media?assetId=${encodeURIComponent(selected.heroAssetId)}`, { method: "DELETE" });
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "Could not remove image.");
+      setRecords((current) => current.map((record) => record.id === selected.id ? { ...record, heroAssetId: null } : record));
+      setMessage("Image removed.");
+    } catch (error) { setMessage(error instanceof Error ? error.message : "Could not remove image."); }
+    finally { setUploading(false); }
+  }
+
+  async function deleteListing() {
+    if (!selected || !window.confirm(`Permanently delete ${selected.name} and its stored images?`)) return;
+    setSaving(true); setMessage("");
+    try {
+      const response = await fetch(`/api/admin/businesses/${selected.id}`, { method: "DELETE" });
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "Could not delete listing.");
+      const remaining = records.filter((record) => record.id !== selected.id);
+      setRecords(remaining); setSelectedId(remaining[0]?.id ?? ""); setForm(remaining[0] ? toForm(remaining[0]) : emptyForm); setMessage("Listing deleted.");
+    } catch (error) { setMessage(error instanceof Error ? error.message : "Could not delete listing."); }
+    finally { setSaving(false); }
+  }
+
+  async function moveListing(direction: -1 | 1) {
+    if (!selected) return;
+    await patchBusiness(selected.id, { priority: Math.max(0, selected.priority + direction) });
   }
 
   async function queueWorkflow(jobType: "preview_build_request" | "outreach_draft") {
@@ -193,6 +226,7 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
             <div className="listing-form">
               <div className="form-pair"><Field label="Business name" value={form.name} onChange={(v) => setField("name", v)} /><Field label="URL slug" value={form.slug} onChange={(v) => setField("slug", v)} /></div>
               <div className="form-pair"><Field label="Industry" value={form.industry} onChange={(v) => setField("industry", v)} /><Field label="City" value={form.city} onChange={(v) => setField("city", v)} /></div>
+              <Field label="Display priority (lower appears first)" value={form.priority} onChange={(v) => setField("priority", Number(v))} type="number" />
               <Field label="Website" value={form.website} onChange={(v) => setField("website", v)} type="url" />
               <Field label="Preview eyebrow" value={form.eyebrow} onChange={(v) => setField("eyebrow", v)} />
               <Field label="Headline" value={form.headline} onChange={(v) => setField("headline", v)} />
@@ -202,14 +236,15 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
               <Field label="Contact phone" value={form.contactPhone} onChange={(v) => setField("contactPhone", v)} />
               <TextField label="Internal notes" value={form.notes} onChange={(v) => setField("notes", v)} />
             </div>
-            <div className="media-upload"><label>Listing image<input type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => setUploadFile(event.target.files?.[0] ?? null)} /></label><button type="button" disabled={!uploadFile || uploading} onClick={uploadImage}>{uploading ? "Uploading…" : "Upload image"}</button><small>{uploadFile ? `${uploadFile.name} ready to upload` : "JPG, PNG, WebP or AVIF · maximum 8 MB"}</small></div>
+            <div className="media-upload"><div><p>Listing image</p><input ref={fileInputRef} className="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => setUploadFile(event.target.files?.[0] ?? null)} /><button type="button" className="file-picker" onClick={() => fileInputRef.current?.click()}>Choose image</button></div><button type="button" disabled={!uploadFile || uploading} onClick={uploadImage}>{uploading ? "Uploading…" : "Upload selected"}</button>{selected.heroAssetId ? <button type="button" className="remove-media" disabled={uploading} onClick={removeImage}>Remove current</button> : null}<small>{uploadFile ? `${uploadFile.name} ready to upload` : "JPG, PNG, WebP or AVIF · maximum 8 MB"}</small></div>
             <div className="workflow-actions"><p className="admin-kicker">Safe workflow actions</p><button type="button" disabled={workflowRunning} onClick={() => queueWorkflow("preview_build_request")}>{workflowRunning ? "Working…" : "Queue preview request"}</button><button type="button" disabled={workflowRunning} onClick={() => queueWorkflow("outreach_draft")}>Create outreach draft</button><small>These create internal queue items only. They do not publish a site or send email.</small></div>
             <div className="workflow-controls workflow-controls--row">
               <label>Preview<select disabled={saving} value={selected.previewStatus} onChange={(event) => patchBusiness(selected.id, { previewStatus: event.target.value })}>{previewOptions.map((option) => <option key={option} value={option}>{labels[option]}</option>)}</select></label>
               <label>Outreach<select disabled={saving} value={selected.outreachStatus} onChange={(event) => patchBusiness(selected.id, { outreachStatus: event.target.value })}>{outreachOptions.map((option) => <option key={option} value={option}>{labels[option]}</option>)}</select></label>
               <label>Approval<select disabled={saving} value={selected.approvalStatus} onChange={(event) => patchBusiness(selected.id, { approvalStatus: event.target.value })}>{approvalOptions.map((option) => <option key={option} value={option}>{labels[option]}</option>)}</select></label>
             </div>
-            <div className="editor-actions"><button type="button" className="archive-button" disabled={saving} onClick={() => patchBusiness(selected.id, { previewStatus: "archived" })}>Archive listing</button><button type="button" className="admin-primary" disabled={saving} onClick={saveListing}>{saving ? "Saving…" : "Save changes"}</button></div>
+            <div className="reorder-actions"><span>Order</span><button type="button" onClick={() => moveListing(-1)} disabled={saving}>Move up</button><button type="button" onClick={() => moveListing(1)} disabled={saving}>Move down</button></div>
+            <div className="editor-actions"><button type="button" className="danger-button" disabled={saving} onClick={deleteListing}>Delete listing</button><button type="button" className="archive-button" disabled={saving} onClick={() => patchBusiness(selected.id, { previewStatus: "archived" })}>Archive</button><button type="button" className="admin-primary" disabled={saving} onClick={saveListing}>{saving ? "Saving…" : "Save changes"}</button></div>
           </aside> : null}
         </div>
       </section>
