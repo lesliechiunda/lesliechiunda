@@ -39,7 +39,7 @@ export const projects: Project[] = [
     summary:
       "South Africa's online death-notice platform, designed to make publishing, sharing and remembering feel dignified and accessible.",
     href: "https://www.rememberus.co.za/",
-    image: "/project-remember-us.png",
+    image: "/project-remember-us.jpg",
     tone: "blue",
   },
   {

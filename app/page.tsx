@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
-import { ConceptGrid, Footer, Header, ProjectGrid, SectionHeading } from "./components";
+import { Footer, Header, ProjectGrid, SectionHeading } from "./components";
 
 export const dynamic = "force-dynamic";
 
@@ -69,24 +69,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="concepts-section">
-        <SectionHeading
-          index="03"
-          eyebrow="Ready-made concepts"
-          link={{ href: "/concepts", label: "Browse concept studio" }}
-        >
-          See your business online
-          <br />before you say yes.
-        </SectionHeading>
-        <p className="concepts-intro">
-          Selected local businesses get a working website concept on a private preview address.
-          Nothing is sent or published as a client project without approval.
-        </p>
-        <ConceptGrid limit={2} />
-      </section>
-
       <section className="process-section">
-        <SectionHeading index="04" eyebrow="The process">
+        <SectionHeading index="03" eyebrow="The process">
           Clear steps. Visible progress.
         </SectionHeading>
         <div className="process-grid">

@@ -11,7 +11,6 @@ export function Header({ dark = false }: { dark?: boolean }) {
       </a>
       <nav aria-label="Main navigation">
         <a href="/work">Work</a>
-        <a href="/concepts">Concepts</a>
         <a href="/#about">About</a>
       </nav>
       <a href="mailto:lesliechiunda@outlook.com" className="nav-cta">
@@ -66,7 +65,7 @@ export function SectionHeading({
   );
 }
 
-export function ProjectCard({ project, index }: { project: Project; index: number }) {
+export function ProjectCard({ project }: { project: Project }) {
   return (
     <a
       href={project.href}
@@ -85,7 +84,6 @@ export function ProjectCard({ project, index }: { project: Project; index: numbe
             <i />
           </div>
         )}
-        <span className="project-number">0{index + 1}</span>
       </div>
       <div className="project-copy">
         <p>{project.category}</p>
@@ -129,12 +127,46 @@ export function ConceptCard({ concept }: { concept: Concept }) {
   );
 }
 
-export async function ProjectGrid({ limit }: { limit?: number }) {
-  const projects = await listPortfolioProjects();
+export const workGroups = [
+  "Business websites",
+  "Web apps & platforms",
+  "E-commerce & bookings",
+  "Systems & automation",
+] as const;
+
+export type WorkGroup = typeof workGroups[number];
+
+function groupForProject(project: Project): WorkGroup {
+  const value = `${project.title} ${project.category}`.toLowerCase();
+  if (value.includes("e-commerce") || value.includes("fashion") || value.includes("beauty") || value.includes("booking")) return "E-commerce & bookings";
+  if (value.includes("loyalty") || value.includes("system") || value.includes("automation")) return "Systems & automation";
+  return "Web apps & platforms";
+}
+
+async function unifiedProjects() {
+  const [portfolio, businesses] = await Promise.all([listPortfolioProjects(), listBusinesses()]);
+  const businessProjects = businesses.filter((business) => business.previewStatus !== "archived").map((business) => ({
+    title: business.name,
+    category: "Business website",
+    summary: business.summary,
+    href: business.previewUrl || `/preview/${business.slug}`,
+    image: business.heroAssetId ? `/api/media/${business.heroAssetId}` : `/concept-${business.slug}.jpg`,
+    tone: "clay" as const,
+    group: "Business websites" as WorkGroup,
+  }));
+  return [
+    ...businessProjects,
+    ...portfolio.map((project) => ({ ...project, group: groupForProject(project) })),
+  ];
+}
+
+export async function ProjectGrid({ limit, group }: { limit?: number; group?: WorkGroup }) {
+  const allProjects = await unifiedProjects();
+  const projects = group ? allProjects.filter((project) => project.group === group) : allProjects;
   return (
     <div className="project-grid">
-      {projects.slice(0, limit).map((project, index) => (
-        <ProjectCard key={project.title} project={project} index={index} />
+      {projects.slice(0, limit).map((project) => (
+        <ProjectCard key={project.title} project={project} />
       ))}
     </div>
   );
