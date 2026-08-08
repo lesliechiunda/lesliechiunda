@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 import { ConceptGrid, Footer, Header, ProjectGrid, SectionHeading } from "./components";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <main>

@@ -174,8 +174,9 @@ img { display: block; max-width: 100%; }
 .project-visual img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: top center;
+  object-fit: contain;
+  object-position: center;
+  background: #ecece8;
   transition: transform .6s cubic-bezier(.2,.7,.2,1);
 }
 .project-card:hover .project-visual img { transform: scale(1.025); }
@@ -259,6 +260,10 @@ img { display: block; max-width: 100%; }
 .concept-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
 .concept-card { border-top: 1px solid var(--ink); padding-top: 14px; }
 .concept-canvas { position: relative; aspect-ratio: 1.25; padding: 5%; overflow: hidden; }
+.concept-card-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #e9e9e5; }
+.concept-image-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.28), rgba(0,0,0,.05) 45%, rgba(0,0,0,.4)); }
+.concept-card-image ~ .concept-mini-nav, .concept-card-image ~ p, .concept-card-image ~ h3 { position: relative; z-index: 1; color: #fff; text-shadow: 0 1px 12px rgba(0,0,0,.35); }
+.concept-card-image ~ i { display: none; }
 .concept-mini-nav { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid currentColor; padding-bottom: 13px; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
 .concept-canvas > p { margin: 16% 0 10px; font: 9px var(--font-geist-mono), monospace; text-transform: uppercase; letter-spacing: .12em; }
 .concept-canvas > h3 { width: 80%; margin: 0; font-family: Georgia, serif; font-size: clamp(38px, 5vw, 78px); font-weight: 400; line-height: .9; letter-spacing: -.055em; }
@@ -313,8 +318,8 @@ img { display: block; max-width: 100%; }
 .business-hero-bottom { display: grid; grid-template-columns: minmax(0, 540px) 1fr; align-items: end; gap: 30px; }
 .business-hero-bottom p { margin: 0; font-size: 17px; line-height: 1.5; }
 .business-hero-bottom span { justify-self: end; color: var(--business-accent); font-size: 80px; line-height: .5; }
-.business-hero-image { margin: 0 3.5vw 8vh; height: min(64vw, 760px); overflow: hidden; border: 1px solid currentColor; }
-.business-hero-image img { width: 100%; height: 100%; object-fit: cover; }
+.business-hero-image { margin: 0 3.5vw 8vh; min-height: 280px; overflow: hidden; border: 1px solid currentColor; background: rgba(255,255,255,.35); }
+.business-hero-image img { display: block; width: 100%; height: auto; max-height: 86vh; object-fit: contain; }
 .business-marquee { overflow: hidden; border-top: 1px solid currentColor; border-bottom: 1px solid currentColor; padding: 18px 0; }
 .business-marquee > div { width: max-content; display: flex; gap: 70px; animation: marquee 28s linear infinite; }
 .business-marquee span { font-family: Georgia, serif; font-size: 27px; font-style: italic; }

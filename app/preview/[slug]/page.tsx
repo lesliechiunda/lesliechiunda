@@ -37,7 +37,8 @@ export default async function PreviewPage({ params }: Props) {
     foreground: fallback?.foreground ?? "#11130f",
     services: services.length ? services : ["Clear information", "Direct enquiries", "Local visibility"],
     heroAssetId: business.heroAssetId,
-  } : fallback ? { ...fallback, heroAssetId: null } : null;
+    image: business.heroAssetId ? `/api/media/${business.heroAssetId}` : `/concept-${business.slug}.jpg`,
+  } : fallback ? { ...fallback, heroAssetId: null, image: `/concept-${fallback.slug}.jpg` } : null;
   if (!concept) notFound();
 
   return (
@@ -67,9 +68,9 @@ export default async function PreviewPage({ params }: Props) {
           <span aria-hidden="true">✦</span>
         </div>
       </section>
-      {concept.heroAssetId ? (
+      {concept.image ? (
         <figure className="business-hero-image">
-          <img src={`/api/media/${concept.heroAssetId}`} alt={`${concept.name} venue and experience`} />
+          <img src={concept.image} alt={`${concept.name} website concept`} />
         </figure>
       ) : null}
       <section className="business-marquee" aria-label="Highlights">

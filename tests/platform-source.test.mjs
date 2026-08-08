@@ -54,7 +54,7 @@ test("admin exposes create update reorder and delete controls", async () => {
     read("app/admin/AdminCRM.tsx"), read("app/admin/AdminProjects.tsx"),
     read("app/api/admin/businesses/[id]/route.ts"), read("app/api/admin/projects/[id]/route.ts"),
   ]);
-  assert.match(crm, /Choose image/);
+  assert.match(crm, /Choose & upload image/);
   assert.match(crm, /Remove current/);
   assert.match(crm, /Delete listing/);
   assert.match(crm, /Move up/);

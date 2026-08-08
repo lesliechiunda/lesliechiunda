@@ -67,7 +67,7 @@
 .workflow-controls select { width: 100%; }
 .workflow-controls--row { grid-template-columns: repeat(3, 1fr); padding-top: 16px; border-top: 1px solid #e6e9e3; }
 .record-panel--editor { max-height: calc(100vh - 80px); position: sticky; top: 20px; overflow-y: auto; }
-.listing-thumb { width: 100%; height: 180px; margin: 16px 0; object-fit: cover; border-radius: 5px; background: #eef0eb; }
+.listing-thumb { width: 100%; height: auto; max-height: 320px; margin: 16px 0; object-fit: contain; border-radius: 5px; background: #eef0eb; }
 .listing-thumb--empty { display: grid; place-items: center; color: #91968e; font-size: 9px; border: 1px dashed #cbd0c7; }
 .listing-form { display: grid; gap: 10px; }
 .form-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }

@@ -115,16 +115,17 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
     finally { setSaving(false); }
   }
 
-  async function uploadImage() {
-    if (!selected || !uploadFile) return;
-    setUploading(true); setMessage(`Uploading ${uploadFile.name}…`);
-    const data = new FormData(); data.set("file", uploadFile); data.set("altText", `${selected.name} listing image`);
+  async function uploadImage(fileOverride?: File) {
+    const fileToUpload = fileOverride ?? uploadFile;
+    if (!selected || !fileToUpload) return;
+    setUploading(true); setMessage(`Uploading ${fileToUpload.name}…`);
+    const data = new FormData(); data.set("file", fileToUpload); data.set("altText", `${selected.name} listing image`);
     try {
       const response = await fetch(`/api/admin/businesses/${selected.id}/media`, { method: "POST", body: data });
       const payload = (await response.json()) as { asset?: { id: string }; error?: string };
       if (!response.ok || !payload.asset) throw new Error(payload.error ?? "Upload failed.");
       setRecords((current) => current.map((record) => record.id === selected.id ? { ...record, heroAssetId: payload.asset!.id } : record));
-      setUploadFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; setMessage("Image uploaded and attached.");
+      setUploadFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; setMessage("Image saved. It is now visible in admin and on the public concept pages.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Upload failed."); }
     finally { setUploading(false); }
   }
@@ -236,7 +237,7 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
               <Field label="Contact phone" value={form.contactPhone} onChange={(v) => setField("contactPhone", v)} />
               <TextField label="Internal notes" value={form.notes} onChange={(v) => setField("notes", v)} />
             </div>
-            <div className="media-upload"><div><p>Listing image</p><input ref={fileInputRef} className="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => setUploadFile(event.target.files?.[0] ?? null)} /><button type="button" className="file-picker" onClick={() => fileInputRef.current?.click()}>Choose image</button></div><button type="button" disabled={!uploadFile || uploading} onClick={uploadImage}>{uploading ? "Uploading…" : "Upload selected"}</button>{selected.heroAssetId ? <button type="button" className="remove-media" disabled={uploading} onClick={removeImage}>Remove current</button> : null}<small>{uploadFile ? `${uploadFile.name} ready to upload` : "JPG, PNG, WebP or AVIF · maximum 8 MB"}</small></div>
+            <div className="media-upload"><div><p>Listing image</p><input ref={fileInputRef} className="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => { const file = event.target.files?.[0] ?? null; setUploadFile(file); if (file) void uploadImage(file); }} /><button type="button" className="file-picker" disabled={uploading} onClick={() => fileInputRef.current?.click()}>{uploading ? "Uploading…" : "Choose & upload image"}</button></div>{uploadFile && !uploading ? <button type="button" onClick={() => uploadImage()}>Retry upload</button> : null}{selected.heroAssetId ? <button type="button" className="remove-media" disabled={uploading} onClick={removeImage}>Remove current</button> : null}<small>{uploading ? "Saving image to this listing…" : "Selecting an image uploads and saves it immediately · maximum 8 MB"}</small></div>
             <div className="workflow-actions"><p className="admin-kicker">Safe workflow actions</p><button type="button" disabled={workflowRunning} onClick={() => queueWorkflow("preview_build_request")}>{workflowRunning ? "Working…" : "Queue preview request"}</button><button type="button" disabled={workflowRunning} onClick={() => queueWorkflow("outreach_draft")}>Create outreach draft</button><small>These create internal queue items only. They do not publish a site or send email.</small></div>
             <div className="workflow-controls workflow-controls--row">
               <label>Preview<select disabled={saving} value={selected.previewStatus} onChange={(event) => patchBusiness(selected.id, { previewStatus: event.target.value })}>{previewOptions.map((option) => <option key={option} value={option}>{labels[option]}</option>)}</select></label>
