@@ -36,7 +36,7 @@ test("admin can queue safe internal workflow work without sending anything", asy
   ]);
   assert.match(queueRoute, /getAdminForApi/);
   assert.match(queueRoute, /createAdminWorkflowJob/);
-  assert.match(admin, /Queue preview request/);
+  assert.match(admin, /Queue website build/);
   assert.match(admin, /Create outreach draft/);
   assert.match(admin, /will not be sent automatically/);
 });
@@ -58,6 +58,16 @@ test("concepts are consolidated into grouped work without image overlays", async
   assert.doesNotMatch(components, /className="project-number"/);
   assert.match(work, /workGroups\.map/);
   assert.match(concepts, /redirect\("\/work"\)/);
+  assert.doesNotMatch(components, /\/preview\//);
+});
+
+test("business website cards use live project domains", async () => {
+  const [components, repository] = await Promise.all([read("app/components.tsx"), read("lib/repository.ts")]);
+  assert.match(components, /donarmandorestaurants-demo\.lesliechiunda\.com/);
+  assert.match(components, /mctrenz\.co\.za/);
+  assert.match(components, /cataplanaportuguese-demo\.lesliechiunda\.com/);
+  assert.doesNotMatch(components, /\/preview\//);
+  assert.doesNotMatch(repository, /previewUrl: `\/preview/);
 });
 
 test("admin exposes create update reorder and delete controls", async () => {

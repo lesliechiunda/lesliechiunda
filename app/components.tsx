@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element, @next/next/no-html-link-for-pages */
 import type { ReactNode } from "react";
-import { type Concept, type Project } from "./data";
+import { type Project } from "./data";
 import { listBusinesses, listPortfolioProjects } from "../lib/repository";
 
 export function Header({ dark = false }: { dark?: boolean }) {
@@ -95,38 +95,6 @@ export function ProjectCard({ project }: { project: Project }) {
   );
 }
 
-export function ConceptCard({ concept }: { concept: Concept }) {
-  return (
-    <a href={`/preview/${concept.slug}`} className="concept-card">
-      <div
-        className="concept-canvas"
-        style={{
-          background: concept.background,
-          color: concept.foreground,
-          ["--concept-accent" as string]: concept.accent,
-        }}
-      >
-        {concept.image ? <img className="concept-card-image" src={concept.image} alt={`${concept.name} website concept`} /> : null}
-        {concept.image ? <span className="concept-image-shade" aria-hidden="true" /> : null}
-        <div className="concept-mini-nav">
-          <strong>{concept.name}</strong>
-          <span>Menu &nbsp; About &nbsp; Book</span>
-        </div>
-        <p>{concept.eyebrow}</p>
-        <h3>{concept.headline}</h3>
-        <i />
-      </div>
-      <div className="concept-meta">
-        <div>
-          <p>{concept.category}</p>
-          <h3>{concept.name}</h3>
-        </div>
-        <span>Open live concept ↗</span>
-      </div>
-    </a>
-  );
-}
-
 export const workGroups = [
   "Business websites",
   "Web apps & platforms",
@@ -145,11 +113,16 @@ function groupForProject(project: Project): WorkGroup {
 
 async function unifiedProjects() {
   const [portfolio, businesses] = await Promise.all([listPortfolioProjects(), listBusinesses()]);
+  const liveBusinessUrls: Record<string, string> = {
+    "don-armando": "https://donarmandorestaurants-demo.lesliechiunda.com/",
+    mctrenz: "https://mctrenz.co.za/",
+    cataplana: "https://cataplanaportuguese-demo.lesliechiunda.com/",
+  };
   const businessProjects = businesses.filter((business) => business.previewStatus !== "archived").map((business) => ({
     title: business.name,
     category: "Business website",
     summary: business.summary,
-    href: business.previewUrl || `/preview/${business.slug}`,
+    href: liveBusinessUrls[business.slug] || business.previewUrl || business.website || "#",
     image: business.heroAssetId ? `/api/media/${business.heroAssetId}` : `/concept-${business.slug}.jpg`,
     tone: "clay" as const,
     group: "Business websites" as WorkGroup,
@@ -167,35 +140,6 @@ export async function ProjectGrid({ limit, group }: { limit?: number; group?: Wo
     <div className="project-grid">
       {projects.slice(0, limit).map((project) => (
         <ProjectCard key={project.title} project={project} />
-      ))}
-    </div>
-  );
-}
-
-export async function ConceptGrid({ limit }: { limit?: number }) {
-  const palette = [
-    { accent: "#ff5a36", background: "#f2dfc7", foreground: "#28160f" },
-    { accent: "#0d66ff", background: "#e9f0e8", foreground: "#10291f" },
-    { accent: "#c8f16b", background: "#151713", foreground: "#f4f0e7" },
-  ];
-  const businesses = await listBusinesses();
-  const concepts: Concept[] = businesses.filter((business) => business.previewStatus !== "archived").map((business, index) => ({
-    slug: business.slug,
-    name: business.name,
-    eyebrow: business.eyebrow || `${business.industry} · ${business.city}`,
-    headline: business.headline || `${business.name}, made easier to discover.`,
-    summary: business.summary,
-    location: business.city,
-    category: business.industry,
-    phone: business.contactPhone || "+27 00 000 0000",
-    services: (() => { try { return JSON.parse(business.services) as string[]; } catch { return []; } })(),
-    image: business.heroAssetId ? `/api/media/${business.heroAssetId}` : `/concept-${business.slug}.jpg`,
-    ...palette[index % palette.length],
-  }));
-  return (
-    <div className="concept-grid">
-      {concepts.slice(0, limit).map((concept) => (
-        <ConceptCard key={concept.slug} concept={concept} />
       ))}
     </div>
   );
