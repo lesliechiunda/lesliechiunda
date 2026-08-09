@@ -5,7 +5,7 @@ import { useMemo, useRef, useState } from "react";
 import type { BusinessRecord } from "../../lib/repository";
 
 const labels: Record<string, string> = {
-  not_started: "Not started", draft: "Draft", review: "In review", live: "Live preview", archived: "Archived",
+  not_started: "Not started", draft: "In progress", review: "In review", live: "Live website", archived: "Archived",
   draft_ready: "Draft ready", approved: "Approved", sent: "Sent", replied: "Replied", needs_review: "Needs review",
   approved_for_preview: "Preview approved", approved_for_outreach: "Outreach approved", rejected: "Rejected",
 };
@@ -16,12 +16,12 @@ const approvalOptions = ["needs_review", "approved_for_preview", "approved_for_o
 type ListingForm = {
   name: string; slug: string; industry: string; city: string; website: string; contactName: string;
   contactEmail: string; contactPhone: string; eyebrow: string; headline: string; summary: string;
-  services: string; notes: string; priority: number;
+  services: string; notes: string; priority: number; liveUrl: string;
 };
 
 const emptyForm: ListingForm = {
   name: "", slug: "", industry: "", city: "", website: "", contactName: "", contactEmail: "",
-  contactPhone: "", eyebrow: "", headline: "", summary: "", services: "", notes: "", priority: 2,
+  contactPhone: "", eyebrow: "", headline: "", summary: "", services: "", notes: "", priority: 2, liveUrl: "",
 };
 
 function toForm(record: BusinessRecord): ListingForm {
@@ -30,7 +30,7 @@ function toForm(record: BusinessRecord): ListingForm {
   return {
     name: record.name, slug: record.slug, industry: record.industry, city: record.city, website: record.website ?? "",
     contactName: record.contactName ?? "", contactEmail: record.contactEmail ?? "", contactPhone: record.contactPhone ?? "",
-    eyebrow: record.eyebrow, headline: record.headline, summary: record.summary, services, notes: record.notes, priority: record.priority,
+    eyebrow: record.eyebrow, headline: record.headline, summary: record.summary, services, notes: record.notes, priority: record.priority, liveUrl: record.previewUrl ?? "",
   };
 }
 
@@ -97,6 +97,7 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
       contactName: form.contactName || null,
       contactEmail: form.contactEmail || null,
       contactPhone: form.contactPhone || null,
+      previewUrl: form.liveUrl || null,
       services: JSON.stringify(form.services.split(",").map((item) => item.trim()).filter(Boolean).slice(0, 8)),
     });
   }
@@ -104,8 +105,9 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
   async function createListing(event: React.FormEvent) {
     event.preventDefault(); setSaving(true); setMessage("");
     try {
+      const { liveUrl, ...newListing } = createForm;
       const response = await fetch("/api/admin/businesses", {
-        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(createForm),
+        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...newListing, previewUrl: liveUrl || null }),
       });
       const payload = (await response.json()) as { business?: BusinessRecord; error?: string };
       if (!response.ok || !payload.business) throw new Error(payload.error ?? "Could not create listing.");
@@ -125,7 +127,7 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
       const payload = (await response.json()) as { asset?: { id: string }; error?: string };
       if (!response.ok || !payload.asset) throw new Error(payload.error ?? "Upload failed.");
       setRecords((current) => current.map((record) => record.id === selected.id ? { ...record, heroAssetId: payload.asset!.id } : record));
-      setUploadFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; setMessage("Image saved. It is now visible in admin and on the public concept pages.");
+      setUploadFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; setMessage("Image saved. It is now visible in admin and on the public Work page.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Upload failed."); }
     finally { setUploading(false); }
   }
@@ -192,7 +194,7 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
         <div className="metric-grid">
           <article><p>Businesses tracked</p><strong>{counts.total.toString().padStart(2, "0")}</strong><span>Editable listings</span></article>
           <article><p>Needs your review</p><strong>{counts.review.toString().padStart(2, "0")}</strong><span>Human decision required</span></article>
-          <article><p>Active previews</p><strong>{counts.previews.toString().padStart(2, "0")}</strong><span>Draft or review</span></article>
+          <article><p>Website projects</p><strong>{counts.previews.toString().padStart(2, "0")}</strong><span>In progress or live</span></article>
           <article><p>Outreach drafts</p><strong>{counts.drafts.toString().padStart(2, "0")}</strong><span>Nothing has been sent</span></article>
         </div>
       </section>
@@ -210,7 +212,7 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
         <div className="pipeline-layout pipeline-layout--editor">
           <div className="pipeline-table-wrap">
             <table className="pipeline-table">
-              <thead><tr><th>Business</th><th>Preview</th><th>Outreach</th><th>Approval</th><th /></tr></thead>
+              <thead><tr><th>Business</th><th>Website</th><th>Outreach</th><th>Approval</th><th /></tr></thead>
               <tbody>{visible.map((record) => (
                 <tr key={record.id} className={selected?.id === record.id ? "is-selected" : ""} onClick={() => selectRecord(record)}>
                   <td><strong>{record.name}</strong><span>{record.industry} · {record.city}</span></td>
@@ -222,14 +224,15 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
           </div>
 
           {selected ? <aside className="record-panel record-panel--editor">
-            <div className="record-panel-head"><div><p className="admin-kicker">Listing editor</p><h3>{selected.name}</h3></div><a href={selected.previewUrl ?? `/preview/${selected.slug}`} target="_blank" rel="noreferrer">Preview ↗</a></div>
+            <div className="record-panel-head"><div><p className="admin-kicker">Listing editor</p><h3>{selected.name}</h3></div>{selected.previewUrl ? <a href={selected.previewUrl} target="_blank" rel="noreferrer">Open live website ↗</a> : null}</div>
             {selected.heroAssetId ? <img className="listing-thumb" src={`/api/media/${selected.heroAssetId}`} alt={`${selected.name} listing`} /> : <div className="listing-thumb listing-thumb--empty">No listing image yet</div>}
             <div className="listing-form">
               <div className="form-pair"><Field label="Business name" value={form.name} onChange={(v) => setField("name", v)} /><Field label="URL slug" value={form.slug} onChange={(v) => setField("slug", v)} /></div>
               <div className="form-pair"><Field label="Industry" value={form.industry} onChange={(v) => setField("industry", v)} /><Field label="City" value={form.city} onChange={(v) => setField("city", v)} /></div>
               <Field label="Display priority (lower appears first)" value={form.priority} onChange={(v) => setField("priority", Number(v))} type="number" />
               <Field label="Website" value={form.website} onChange={(v) => setField("website", v)} type="url" />
-              <Field label="Preview eyebrow" value={form.eyebrow} onChange={(v) => setField("eyebrow", v)} />
+              <Field label="Live project URL" value={form.liveUrl} onChange={(v) => setField("liveUrl", v)} type="url" />
+              <Field label="Project eyebrow" value={form.eyebrow} onChange={(v) => setField("eyebrow", v)} />
               <Field label="Headline" value={form.headline} onChange={(v) => setField("headline", v)} />
               <TextField label="Summary" value={form.summary} onChange={(v) => setField("summary", v)} />
               <Field label="Services (comma separated)" value={form.services} onChange={(v) => setField("services", v)} />
@@ -238,9 +241,9 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
               <TextField label="Internal notes" value={form.notes} onChange={(v) => setField("notes", v)} />
             </div>
             <div className="media-upload"><div><p>Listing image</p><input ref={fileInputRef} className="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => { const file = event.target.files?.[0] ?? null; setUploadFile(file); if (file) void uploadImage(file); }} /><button type="button" className="file-picker" disabled={uploading} onClick={() => fileInputRef.current?.click()}>{uploading ? "Uploading…" : "Choose & upload image"}</button></div>{uploadFile && !uploading ? <button type="button" onClick={() => uploadImage()}>Retry upload</button> : null}{selected.heroAssetId ? <button type="button" className="remove-media" disabled={uploading} onClick={removeImage}>Remove current</button> : null}<small>{uploading ? "Saving image to this listing…" : "Selecting an image uploads and saves it immediately · maximum 8 MB"}</small></div>
-            <div className="workflow-actions"><p className="admin-kicker">Safe workflow actions</p><button type="button" disabled={workflowRunning} onClick={() => queueWorkflow("preview_build_request")}>{workflowRunning ? "Working…" : "Queue preview request"}</button><button type="button" disabled={workflowRunning} onClick={() => queueWorkflow("outreach_draft")}>Create outreach draft</button><small>These create internal queue items only. They do not publish a site or send email.</small></div>
+            <div className="workflow-actions"><p className="admin-kicker">Safe workflow actions</p><button type="button" disabled={workflowRunning} onClick={() => queueWorkflow("preview_build_request")}>{workflowRunning ? "Working…" : "Queue website build"}</button><button type="button" disabled={workflowRunning} onClick={() => queueWorkflow("outreach_draft")}>Create outreach draft</button><small>These create internal queue items only. They do not publish a site or send email.</small></div>
             <div className="workflow-controls workflow-controls--row">
-              <label>Preview<select disabled={saving} value={selected.previewStatus} onChange={(event) => patchBusiness(selected.id, { previewStatus: event.target.value })}>{previewOptions.map((option) => <option key={option} value={option}>{labels[option]}</option>)}</select></label>
+              <label>Website status<select disabled={saving} value={selected.previewStatus} onChange={(event) => patchBusiness(selected.id, { previewStatus: event.target.value })}>{previewOptions.map((option) => <option key={option} value={option}>{labels[option]}</option>)}</select></label>
               <label>Outreach<select disabled={saving} value={selected.outreachStatus} onChange={(event) => patchBusiness(selected.id, { outreachStatus: event.target.value })}>{outreachOptions.map((option) => <option key={option} value={option}>{labels[option]}</option>)}</select></label>
               <label>Approval<select disabled={saving} value={selected.approvalStatus} onChange={(event) => patchBusiness(selected.id, { approvalStatus: event.target.value })}>{approvalOptions.map((option) => <option key={option} value={option}>{labels[option]}</option>)}</select></label>
             </div>
@@ -255,7 +258,8 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
         <Field label="Business name" value={createForm.name} onChange={(v) => { setField("name", v, "create"); if (!createForm.slug) setField("slug", v.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""), "create"); }} required />
         <Field label="URL slug" value={createForm.slug} onChange={(v) => setField("slug", v, "create")} required />
         <div className="form-pair"><Field label="Industry" value={createForm.industry} onChange={(v) => setField("industry", v, "create")} /><Field label="City" value={createForm.city} onChange={(v) => setField("city", v, "create")} /></div>
-        <Field label="Preview headline" value={createForm.headline} onChange={(v) => setField("headline", v, "create")} />
+        <Field label="Project headline" value={createForm.headline} onChange={(v) => setField("headline", v, "create")} />
+        <Field label="Live project URL" value={createForm.liveUrl} onChange={(v) => setField("liveUrl", v, "create")} type="url" />
         <TextField label="Short summary" value={createForm.summary} onChange={(v) => setField("summary", v, "create")} />
         <div className="editor-actions"><button type="button" className="archive-button" onClick={() => setShowCreate(false)}>Cancel</button><button className="admin-primary" disabled={saving}>{saving ? "Creating…" : "Create listing"}</button></div>
       </form></div> : null}

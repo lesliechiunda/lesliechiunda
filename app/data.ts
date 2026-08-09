@@ -7,22 +7,6 @@ export type Project = {
   tone: "lime" | "clay" | "blue" | "ink";
 };
 
-export type Concept = {
-  slug: string;
-  name: string;
-  eyebrow: string;
-  headline: string;
-  summary: string;
-  location: string;
-  category: string;
-  phone: string;
-  accent: string;
-  background: string;
-  foreground: string;
-  services: string[];
-  image?: string;
-};
-
 export const projects: Project[] = [
   {
     title: "Finlit",
@@ -79,55 +63,3 @@ export const projects: Project[] = [
     tone: "clay",
   },
 ];
-
-export const concepts: Concept[] = [
-  {
-    slug: "don-armando",
-    name: "Don Armando",
-    eyebrow: "Neighbourhood kitchen · Johannesburg",
-    headline: "Good food, made for long tables.",
-    summary:
-      "A warm, confident restaurant concept built around wood-fired plates, easy bookings and a menu that gets to the point.",
-    location: "Johannesburg",
-    category: "Restaurant",
-    phone: "+27 11 000 0000",
-    accent: "#ff5a36",
-    background: "#f2dfc7",
-    foreground: "#28160f",
-    services: ["Lunch & dinner", "Group bookings", "Private events"],
-  },
-  {
-    slug: "cataplana",
-    name: "Cataplana",
-    eyebrow: "Portuguese table · Gauteng",
-    headline: "The coast, served in the city.",
-    summary:
-      "A bright hospitality concept with a strong menu story, direct reservation flow and room for events, reviews and seasonal specials.",
-    location: "Gauteng",
-    category: "Hospitality",
-    phone: "+27 10 000 0000",
-    accent: "#0d66ff",
-    background: "#e9f0e8",
-    foreground: "#10291f",
-    services: ["Fresh seafood", "Family tables", "Celebrations"],
-  },
-  {
-    slug: "mctrenz",
-    name: "McTrenz",
-    eyebrow: "Precision services · Johannesburg",
-    headline: "Reliable work. Clear answers. No runaround.",
-    summary:
-      "A direct, high-trust service-business concept designed to turn local searches into qualified enquiries.",
-    location: "Johannesburg",
-    category: "Service business",
-    phone: "+27 71 000 0000",
-    accent: "#c8f16b",
-    background: "#151713",
-    foreground: "#f4f0e7",
-    services: ["Fast quotations", "On-site service", "Ongoing support"],
-  },
-];
-
-export function getConcept(slug: string) {
-  return concepts.find((concept) => concept.slug === slug);
-}
