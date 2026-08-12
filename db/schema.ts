@@ -73,6 +73,7 @@ export const blogArticles = sqliteTable(
     seoDescription: text("seo_description"),
     sortOrder: integer("sort_order").notNull().default(0),
     publishedAt: text("published_at"),
+    publicationApprovedAt: text("publication_approved_at"),
     createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   },

@@ -56,7 +56,7 @@ test("blog drafts are editable in admin and excluded from public listings", asyn
   ]);
   assert.match(schema, /blogArticles/);
   assert.match(repository, /status: "draft"/);
-  assert.match(repository, /rows\.filter\(\(article\) => article\.status === "published"\)/);
+  assert.match(repository, /article\.status === "published" && Boolean\(article\.publicationApprovedAt\)/);
   assert.match(admin, /Drafts are private/);
   assert.match(admin, /Review draft/);
   assert.match(publicBlog, /listBlogArticles\(\)/);

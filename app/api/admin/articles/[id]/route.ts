@@ -24,6 +24,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     if (values.status) {
       const current = await getBlogArticleById(id);
       values.publishedAt = values.status === "published" ? current?.publishedAt ?? new Date().toISOString() : null;
+      values.publicationApprovedAt = values.status === "published" ? new Date().toISOString() : null;
     }
     const article = await updateBlogArticle(id, values);
     if (!article) return NextResponse.json({ error: "Not found" }, { status: 404 });
