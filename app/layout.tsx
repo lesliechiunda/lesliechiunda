@@ -26,6 +26,10 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description:
       "Independent full-stack developer and digital studio building useful websites, apps, commerce experiences and business platforms in South Africa.",
+    icons: {
+      icon: [{ url: "/icon.png", type: "image/png" }],
+      apple: [{ url: "/apple-icon.png", type: "image/png" }],
+    },
     openGraph: {
       type: "website",
       title: "Leslie Chiunda — Websites built to move business forward",

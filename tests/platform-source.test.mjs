@@ -106,6 +106,15 @@ test("articles support backdating and display Leslie's author details", async ()
   assert.match(article, /SAST/);
 });
 
+test("site uses the supplied favicon and exposes LinkedIn and WhatsApp in the footer", async () => {
+  const [layout, components] = await Promise.all([read("app/layout.tsx"), read("app/components.tsx")]);
+  assert.match(layout, /\/icon\.png/);
+  assert.match(layout, /\/apple-icon\.png/);
+  assert.match(components, /linkedin\.com\/in\/lesliechiunda/);
+  assert.match(components, /wa\.me\/27794031161/);
+  assert.match(components, /\+27 79 403 1161/);
+});
+
 test("concepts are consolidated into grouped work without image overlays", async () => {
   const [components, work, concepts] = await Promise.all([
     read("app/components.tsx"), read("app/work/page.tsx"), read("app/concepts/page.tsx"),
