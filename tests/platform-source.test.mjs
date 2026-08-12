@@ -70,6 +70,18 @@ test("article covers can be uploaded and removed through protected storage route
   assert.match(coverRoute, /export async function DELETE/);
 });
 
+test("professional networking cybersecurity and technology drafts are seeded without publishing", async () => {
+  const repository = await read("lib/repository.ts");
+  assert.match(repository, /category: "Networking"/);
+  assert.match(repository, /category: "Cybersecurity"/);
+  assert.match(repository, /category: "Technology"/);
+  assert.match(repository, /article_resilient_networks/);
+  assert.match(repository, /article_practical_cybersecurity/);
+  assert.match(repository, /article_technology_curiosity/);
+  assert.match(repository, /publicationApprovedAt: null/);
+  assert.match(repository, /const missing = demoBlogArticles\.filter/);
+});
+
 test("concepts are consolidated into grouped work without image overlays", async () => {
   const [components, work, concepts] = await Promise.all([
     read("app/components.tsx"), read("app/work/page.tsx"), read("app/concepts/page.tsx"),

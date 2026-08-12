@@ -1,4 +1,4 @@
-import { asc, count, desc, eq } from "drizzle-orm";
+import { asc, count, desc, eq, inArray } from "drizzle-orm";
 import { getDb } from "../db";
 import { agentJobs, approvals, blogArticles, businesses, mediaAssets, outreachEvents, portfolioProjects } from "../db/schema";
 import { projects as staticProjects } from "../app/data";
@@ -176,12 +176,152 @@ A trustworthy website does not need to look corporate. It needs to feel consiste
     createdAt: "2026-08-12T08:02:00.000Z",
     updatedAt: "2026-08-12T08:02:00.000Z",
   },
+  {
+    id: "article_resilient_networks",
+    title: "A good network should make growth feel boring",
+    slug: "a-good-network-should-make-growth-feel-boring",
+    excerpt: "The best business networks are rarely noticed. They stay predictable as people, devices, locations and expectations grow.",
+    category: "Networking",
+    coverImage: "/blog-resilient-networks.jpg",
+    coverAlt: "Abstract architectural network with luminous blue fibre paths connecting resilient nodes",
+    coverObjectKey: null,
+    coverContentType: null,
+    status: "draft",
+    seoTitle: "Why resilient business networks make growth feel boring",
+    seoDescription: "A practical view of network design, redundancy, visibility and capacity for growing organisations.",
+    sortOrder: 3,
+    publishedAt: null,
+    publicationApprovedAt: null,
+    body: `A network is doing its job when the people using it do not have to think about it. Calls remain clear, files open quickly, cloud systems respond and a new employee can get connected without turning the day into an infrastructure project.
+
+That calm experience is not accidental. It comes from designing for change before change becomes urgent.
+
+## Begin with how the business works
+
+Network design should start with people and operations, not a shopping list of equipment. Which activities cannot stop? Where do staff work? Which systems depend on the internet? What happens when a connection, switch or power source fails?
+
+The answers reveal where capacity, separation and redundancy matter. A restaurant, design studio and distributed services company can have similar device counts but very different risk profiles.
+
+## Separate what should not share risk
+
+Guest Wi-Fi, employee devices, operational systems, cameras and infrastructure management should not all live in one flat network. Thoughtful segmentation reduces unnecessary exposure and makes troubleshooting more precise.
+
+This does not mean making the environment complicated for its own sake. The structure should be documented, understandable and proportionate to the organisation.
+
+## Build visibility before adding complexity
+
+A resilient network needs useful monitoring. Teams should be able to see whether poor performance begins with the internet connection, wireless coverage, a busy uplink or an unhealthy device. Without visibility, upgrades become guesses.
+
+Baselines also matter. Knowing what normal traffic, latency and utilisation look like makes unusual behaviour easier to detect before it becomes an outage.
+
+## Treat documentation as infrastructure
+
+Diagrams, addressing plans, equipment records, configuration backups and recovery steps are part of the network. They reduce dependency on memory and make future changes safer.
+
+Growth should not feel dramatic. When foundations are clear and spare capacity is intentional, adding a person, service or location becomes routine. That kind of boring is a technical achievement.`,
+    createdAt: "2026-08-12T10:00:00.000Z",
+    updatedAt: "2026-08-12T10:00:00.000Z",
+  },
+  {
+    id: "article_practical_cybersecurity",
+    title: "Cybersecurity is a habit, not a product",
+    slug: "cybersecurity-is-a-habit-not-a-product",
+    excerpt: "Security improves when everyday decisions become safer, recoverable and easier to repeat—not when one tool promises to solve everything.",
+    category: "Cybersecurity",
+    coverImage: "/blog-practical-cybersecurity.jpg",
+    coverAlt: "Layered glass security structure protecting a warm illuminated core in a dark workspace",
+    coverObjectKey: null,
+    coverContentType: null,
+    status: "draft",
+    seoTitle: "Cybersecurity is a habit, not a product",
+    seoDescription: "Practical cybersecurity foundations for smaller organisations: identity, updates, backups, access and recovery.",
+    sortOrder: 4,
+    publishedAt: null,
+    publicationApprovedAt: null,
+    body: `Cybersecurity is often presented through dramatic threats and expensive products. Real protection is usually less theatrical. It is the result of small decisions made consistently across people, devices, accounts and data.
+
+No single tool creates safety. A useful security programme combines layers so that one mistake does not become a complete failure.
+
+## Protect identity first
+
+Accounts are now the front door to email, banking, customer records and cloud services. Unique passwords, a password manager and multi-factor authentication create an immediate improvement for most organisations.
+
+Access should also match the job. Not every person needs administrator rights, and access should be removed promptly when responsibilities change.
+
+## Keep systems current
+
+Updates close known weaknesses, but they only help when devices are visible and supported. An inventory of laptops, phones, routers, software and online services gives the business a clear starting point.
+
+Unsupported systems deserve a replacement plan. The longer they remain essential, the more difficult and costly recovery can become.
+
+## Make recovery part of security
+
+Backups are valuable only when they are recent, protected and tested. Important information should have more than one copy, with at least one copy separated from the systems it protects.
+
+A short incident plan is equally important. Who makes decisions? How will the business communicate if email is unavailable? Which systems return first? Practising those questions is more useful than assuming an incident will never happen.
+
+## Design the safer action to be the easier action
+
+Security guidance fails when it asks people to remember a complicated exception every day. Clear processes, approved tools and sensible defaults reduce the number of risky decisions staff need to make.
+
+The objective is not perfect protection. It is reducing avoidable risk, detecting trouble sooner and recovering with confidence. That work becomes stronger when security is treated as an operating habit rather than a product bought once.`,
+    createdAt: "2026-08-12T10:01:00.000Z",
+    updatedAt: "2026-08-12T10:01:00.000Z",
+  },
+  {
+    id: "article_technology_curiosity",
+    title: "Why I still like taking technology apart",
+    slug: "why-i-still-like-taking-technology-apart",
+    excerpt: "Hands-on experiments turn abstract technology into something understandable—and often reveal the simplest path to a useful system.",
+    category: "Technology",
+    coverImage: "/blog-technology-curiosity.jpg",
+    coverAlt: "Warm technology workbench with network components, prototype electronics and sketched ideas",
+    coverObjectKey: null,
+    coverContentType: null,
+    status: "draft",
+    seoTitle: "Why hands-on technology experiments still matter",
+    seoDescription: "A personal reflection on learning through prototypes, networks, electronics and useful technical experiments.",
+    sortOrder: 5,
+    publishedAt: null,
+    publicationApprovedAt: null,
+    body: `Some of the most useful technical lessons begin with a question that has no immediate commercial value. What happens if these two systems connect? Can this old device become useful again? Could a small prototype remove one repetitive task?
+
+Taking technology apart—sometimes literally, sometimes through code or network traces—turns a black box into a set of understandable choices.
+
+## Curiosity builds better judgement
+
+Documentation explains how a system is intended to work. Experimentation shows how it behaves when connections are slow, inputs are messy or one component fails.
+
+That difference matters in professional work. Good judgement grows from seeing enough systems succeed and fail to recognise where complexity is justified and where it is hiding a weak idea.
+
+## Small prototypes answer big questions
+
+A prototype does not need to become a product. A spare computer, a sensor, a test network or a short script can prove whether an idea is useful before a large commitment is made.
+
+The best experiments isolate one uncertain part. They create evidence: a measurement, a working interaction or a clear reason to choose another direction.
+
+## Different disciplines make each other stronger
+
+Networking changes how I think about web applications. Cybersecurity changes how I design access and recovery. Software makes physical systems easier to observe and control. Design keeps all of that technology connected to a person with a real task.
+
+The interesting work often happens at those boundaries. Understanding more than one layer makes it easier to see the whole system and communicate with the people responsible for each part.
+
+## Keep a place for unfinished ideas
+
+Not every experiment deserves a polished case study. Notes, diagrams and imperfect prototypes preserve the thinking that may become useful later.
+
+Technology changes quickly, but curiosity remains a durable skill. It keeps learning active and reminds me that the point is not to collect tools. It is to understand what they make possible.`,
+    createdAt: "2026-08-12T10:02:00.000Z",
+    updatedAt: "2026-08-12T10:02:00.000Z",
+  },
 ];
 
 async function seedBlogArticles() {
   const db = getDb();
-  const [existing] = await db.select({ value: count() }).from(blogArticles);
-  if (!existing?.value) await db.insert(blogArticles).values(demoBlogArticles).onConflictDoNothing();
+  const existing = await db.select({ id: blogArticles.id }).from(blogArticles).where(inArray(blogArticles.id, demoBlogArticles.map((article) => article.id)));
+  const existingIds = new Set(existing.map((article) => article.id));
+  const missing = demoBlogArticles.filter((article) => !existingIds.has(article.id));
+  if (missing.length) await db.insert(blogArticles).values(missing).onConflictDoNothing();
 }
 
 export async function listBlogArticles(options: { includeDrafts?: boolean } = {}): Promise<BlogArticleRecord[]> {
