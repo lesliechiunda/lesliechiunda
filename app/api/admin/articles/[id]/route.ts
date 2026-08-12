@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getAdminForApi } from "../../../../../lib/admin-auth";
 import { deleteBlogArticle, getBlogArticleById, updateBlogArticle } from "../../../../../lib/repository";
 
-const allowed = new Set(["title", "slug", "excerpt", "body", "category", "coverImage", "coverAlt", "status", "seoTitle", "seoDescription", "sortOrder"]);
+const allowed = new Set(["title", "slug", "excerpt", "body", "category", "coverImage", "coverAlt", "status", "seoTitle", "seoDescription", "sortOrder", "publishedAt"]);
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const admin = await getAdminForApi();
@@ -15,6 +15,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     if (!allowed.has(key)) continue;
     if (typeof value !== "string" && typeof value !== "number" && value !== null) return NextResponse.json({ error: `Invalid ${key}.` }, { status: 400 });
     if (key === "status" && value !== "draft" && value !== "published") return NextResponse.json({ error: "Status must be draft or published." }, { status: 400 });
+    if (key === "publishedAt" && typeof value === "string" && Number.isNaN(Date.parse(value))) return NextResponse.json({ error: "Publication date is invalid." }, { status: 400 });
     if (key === "slug" && typeof value === "string") values.slug = value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 140);
     else if (typeof value === "string") values[key] = value.slice(0, key === "body" ? 100000 : key === "excerpt" ? 800 : 500);
     else values[key] = value;
@@ -23,7 +24,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   try {
     if (values.status) {
       const current = await getBlogArticleById(id);
-      values.publishedAt = values.status === "published" ? current?.publishedAt ?? new Date().toISOString() : null;
+      values.publishedAt = values.status === "published" ? values.publishedAt ?? current?.publishedAt ?? new Date().toISOString() : values.publishedAt ?? null;
       values.publicationApprovedAt = values.status === "published" ? new Date().toISOString() : null;
     }
     const article = await updateBlogArticle(id, values);

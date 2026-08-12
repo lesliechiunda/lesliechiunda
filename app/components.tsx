@@ -126,6 +126,7 @@ async function unifiedProjects() {
     href: liveBusinessUrls[business.slug] || business.previewUrl || business.website || "#",
     image: business.heroAssetId ? `/api/media/${business.heroAssetId}` : `/concept-${business.slug}.jpg`,
     tone: "clay" as const,
+    featured: business.featured,
     group: "Business websites" as WorkGroup,
   }));
   return [
@@ -134,9 +135,9 @@ async function unifiedProjects() {
   ];
 }
 
-export async function ProjectGrid({ limit, group }: { limit?: number; group?: WorkGroup }) {
+export async function ProjectGrid({ limit, group, featured = false }: { limit?: number; group?: WorkGroup; featured?: boolean }) {
   const allProjects = await unifiedProjects();
-  const projects = group ? allProjects.filter((project) => project.group === group) : allProjects;
+  const projects = allProjects.filter((project) => (!group || project.group === group) && (!featured || project.featured));
   return (
     <div className="project-grid">
       {projects.slice(0, limit).map((project) => (

@@ -18,6 +18,7 @@ export async function POST(request: Request) {
       image: typeof body.image === "string" && body.image.trim() ? body.image.trim().slice(0, 500) : null,
       tone: typeof body.tone === "string" && ["lime", "clay", "blue", "ink"].includes(body.tone) ? body.tone : "lime",
       published: body.published !== false,
+      featured: body.featured === true,
       sortOrder: typeof body.sortOrder === "number" ? body.sortOrder : 0,
     });
     return NextResponse.json({ project }, { status: 201 });

@@ -5,7 +5,7 @@ import { deleteBusiness, updateBusiness } from "../../../../../lib/repository";
 
 const allowed = new Set([
   "name", "slug", "industry", "city", "website", "websiteStatus", "previewStatus", "previewUrl",
-  "outreachStatus", "approvalStatus", "priority", "contactName", "contactEmail", "contactPhone",
+  "outreachStatus", "approvalStatus", "priority", "featured", "contactName", "contactEmail", "contactPhone",
   "eyebrow", "headline", "summary", "services", "notes",
 ]);
 
@@ -15,9 +15,9 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const body = (await request.json()) as Record<string, unknown>;
   const entries = Object.entries(body).filter(([key]) => allowed.has(key));
   if (entries.length === 0) return NextResponse.json({ error: "No supported fields supplied." }, { status: 400 });
-  const values: Record<string, string | number | null> = {};
+  const values: Record<string, string | number | boolean | null> = {};
   for (const [field, value] of entries) {
-    if (value !== null && typeof value !== "string" && typeof value !== "number") {
+    if (value !== null && typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") {
       return NextResponse.json({ error: `Invalid ${field}.` }, { status: 400 });
     }
     values[field] = typeof value === "string" ? value.slice(0, field === "summary" || field === "notes" ? 3000 : 300) : value;

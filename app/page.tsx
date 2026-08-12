@@ -38,7 +38,7 @@ export default function Home() {
           Built for the real world,
           <br />not the pitch deck.
         </SectionHeading>
-        <ProjectGrid limit={4} />
+        <ProjectGrid featured />
       </section>
 
       <section className="about-section" id="about">

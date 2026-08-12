@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAdminForApi } from "../../../../../lib/admin-auth";
 import { deletePortfolioProject, updatePortfolioProject } from "../../../../../lib/repository";
 
-const allowed = new Set(["title", "category", "summary", "href", "image", "tone", "published", "sortOrder"]);
+const allowed = new Set(["title", "category", "summary", "href", "image", "tone", "published", "featured", "sortOrder"]);
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
   const admin = await getAdminForApi();

@@ -25,6 +25,7 @@ export async function POST(request: Request) {
       seoTitle: typeof body.seoTitle === "string" && body.seoTitle.trim() ? body.seoTitle.slice(0, 180) : null,
       seoDescription: typeof body.seoDescription === "string" && body.seoDescription.trim() ? body.seoDescription.slice(0, 320) : null,
       sortOrder: typeof body.sortOrder === "number" ? body.sortOrder : 0,
+      publishedAt: typeof body.publishedAt === "string" && !Number.isNaN(Date.parse(body.publishedAt)) ? new Date(body.publishedAt).toISOString() : null,
     });
     return NextResponse.json({ article }, { status: 201 });
   } catch {

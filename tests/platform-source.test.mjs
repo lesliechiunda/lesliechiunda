@@ -82,6 +82,30 @@ test("professional networking cybersecurity and technology drafts are seeded wit
   assert.match(repository, /const missing = demoBlogArticles\.filter/);
 });
 
+test("mobile navigation remains visible and homepage projects are explicitly featured", async () => {
+  const [styles, home, components, projects, crm, schema] = await Promise.all([
+    read("app/globals.css"), read("app/page.tsx"), read("app/components.tsx"), read("app/admin/AdminProjects.tsx"), read("app/admin/AdminCRM.tsx"), read("db/schema.ts"),
+  ]);
+  assert.doesNotMatch(styles, /\.site-header nav \{ display: none; \}/);
+  assert.match(home, /<ProjectGrid featured \/>/);
+  assert.match(components, /!featured \|\| project\.featured/);
+  assert.match(projects, /Feature on homepage/);
+  assert.match(crm, /Feature on homepage/);
+  assert.match(schema, /featured: integer/);
+});
+
+test("articles support backdating and display Leslie's author details", async () => {
+  const [admin, article, route] = await Promise.all([
+    read("app/admin/AdminArticles.tsx"), read("app/blog/ArticleView.tsx"), read("app/api/admin/articles/[id]/route.ts"),
+  ]);
+  assert.match(admin, /type="datetime-local"/);
+  assert.match(route, /"publishedAt"/);
+  assert.match(article, /Published by/);
+  assert.match(article, /Leslie Chiunda/);
+  assert.match(article, /\/leslie\.jpg/);
+  assert.match(article, /SAST/);
+});
+
 test("concepts are consolidated into grouped work without image overlays", async () => {
   const [components, work, concepts] = await Promise.all([
     read("app/components.tsx"), read("app/work/page.tsx"), read("app/concepts/page.tsx"),

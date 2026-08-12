@@ -16,7 +16,7 @@ export const demoBusinesses: BusinessRecord[] = [
   {
     id: "biz_don_armando", name: "Don Armando", slug: "don-armando", industry: "Restaurant", city: "Johannesburg",
     website: null, websiteStatus: "none", source: "manual_research", previewStatus: "live", previewUrl: "https://donarmandorestaurants-demo.lesliechiunda.com/",
-    outreachStatus: "draft_ready", approvalStatus: "needs_review", priority: 1, contactName: null, contactEmail: null,
+    outreachStatus: "draft_ready", approvalStatus: "needs_review", priority: 1, featured: true, contactName: null, contactEmail: null,
     contactPhone: null, eyebrow: "Neighbourhood kitchen · Johannesburg", headline: "Good food, made for long tables.",
     summary: "A warm, confident restaurant website built around wood-fired plates, easy bookings and a menu that gets to the point.",
     services: "[\"Lunch & dinner\",\"Group bookings\",\"Private events\"]", heroAssetId: null,
@@ -26,7 +26,7 @@ export const demoBusinesses: BusinessRecord[] = [
   {
     id: "biz_cataplana", name: "Cataplana", slug: "cataplana", industry: "Hospitality", city: "Gauteng",
     website: null, websiteStatus: "none", source: "manual_research", previewStatus: "live", previewUrl: "https://cataplanaportuguese-demo.lesliechiunda.com/",
-    outreachStatus: "not_started", approvalStatus: "approved_for_preview", priority: 2, contactName: null, contactEmail: null,
+    outreachStatus: "not_started", approvalStatus: "approved_for_preview", priority: 2, featured: false, contactName: null, contactEmail: null,
     contactPhone: null, eyebrow: "Portuguese table · Gauteng", headline: "The coast, served in the city.",
     summary: "A bright hospitality website with a strong menu story, direct reservation flow and room for events, reviews and seasonal specials.",
     services: "[\"Fresh seafood\",\"Family tables\",\"Celebrations\"]", heroAssetId: null,
@@ -36,7 +36,7 @@ export const demoBusinesses: BusinessRecord[] = [
   {
     id: "biz_mctrenz", name: "McTrenz", slug: "mctrenz", industry: "Local services", city: "Johannesburg",
     website: null, websiteStatus: "social_only", source: "agent_discovery", previewStatus: "live", previewUrl: "https://mctrenz.co.za/",
-    outreachStatus: "not_started", approvalStatus: "needs_review", priority: 3, contactName: null, contactEmail: null,
+    outreachStatus: "not_started", approvalStatus: "needs_review", priority: 3, featured: false, contactName: null, contactEmail: null,
     contactPhone: null, eyebrow: "Precision services · Johannesburg", headline: "Reliable work. Clear answers. No runaround.",
     summary: "A direct, high-trust service-business website designed to turn local searches into qualified enquiries.",
     services: "[\"Fast quotations\",\"On-site service\",\"Ongoing support\"]", heroAssetId: null,
@@ -54,6 +54,7 @@ const demoProjects: PortfolioProjectRecord[] = staticProjects.map((project, inde
   image: project.image ?? null,
   tone: project.tone,
   published: true,
+  featured: Boolean(project.featured),
   sortOrder: index,
   createdAt: "2026-08-08 10:00:00",
   updatedAt: "2026-08-08 10:00:00",
@@ -355,11 +356,11 @@ export async function getBlogArticleBySlug(slug: string, options: { includeDraft
   }
 }
 
-export async function createBlogArticle(input: Pick<BlogArticleRecord, "title" | "slug" | "excerpt" | "body" | "category" | "coverImage" | "coverAlt" | "status" | "seoTitle" | "seoDescription" | "sortOrder">) {
+export async function createBlogArticle(input: Pick<BlogArticleRecord, "title" | "slug" | "excerpt" | "body" | "category" | "coverImage" | "coverAlt" | "status" | "seoTitle" | "seoDescription" | "sortOrder" | "publishedAt">) {
   const db = getDb();
   const now = new Date().toISOString();
   const [created] = await db.insert(blogArticles).values({
-    id: crypto.randomUUID(), ...input, publishedAt: input.status === "published" ? now : null, createdAt: now, updatedAt: now,
+    id: crypto.randomUUID(), ...input, publishedAt: input.status === "published" ? input.publishedAt ?? now : input.publishedAt, createdAt: now, updatedAt: now,
   }).returning();
   return created;
 }
@@ -388,7 +389,7 @@ export async function listPortfolioProjects(options: { includeUnpublished?: bool
   }
 }
 
-export async function createPortfolioProject(input: Pick<PortfolioProjectRecord, "title" | "category" | "summary" | "href" | "image" | "tone" | "published" | "sortOrder">) {
+export async function createPortfolioProject(input: Pick<PortfolioProjectRecord, "title" | "category" | "summary" | "href" | "image" | "tone" | "published" | "featured" | "sortOrder">) {
   const db = getDb();
   const now = new Date().toISOString();
   const [created] = await db.insert(portfolioProjects).values({ id: crypto.randomUUID(), ...input, createdAt: now, updatedAt: now }).returning();
