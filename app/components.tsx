@@ -31,6 +31,10 @@ export function Footer() {
       <a href="mailto:lesliechiunda@outlook.com" className="footer-mail">
         lesliechiunda@outlook.com <span aria-hidden="true">↗</span>
       </a>
+      <div className="footer-contact-links" aria-label="Social and direct contact links">
+        <a href="https://www.linkedin.com/in/lesliechiunda/" target="_blank" rel="noreferrer">LinkedIn <span aria-hidden="true">↗</span></a>
+        <a href="https://wa.me/27794031161" target="_blank" rel="noreferrer">WhatsApp · +27 79 403 1161 <span aria-hidden="true">↗</span></a>
+      </div>
       <div className="footer-bottom">
         <p>Johannesburg, South Africa</p>
         <p>© {new Date().getFullYear()} Leslie Chiunda</p>
