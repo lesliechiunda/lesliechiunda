@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { chatGPTSignOutPath } from "../chatgpt-auth";
 import { requireAdmin } from "../../lib/admin-auth";
-import { listAgentJobs, listBusinesses, listPortfolioProjects } from "../../lib/repository";
+import { listAgentJobs, listBlogArticles, listBusinesses, listPortfolioProjects } from "../../lib/repository";
 import AdminCRM from "./AdminCRM";
+import AdminArticles from "./AdminArticles";
 import AdminProjects from "./AdminProjects";
 import "./admin.css";
 
@@ -12,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
   const admin = await requireAdmin("/admin");
-  const [businesses, projects, jobs] = await Promise.all([listBusinesses(), listPortfolioProjects({ includeUnpublished: true }), listAgentJobs()]);
+  const [businesses, projects, articles, jobs] = await Promise.all([listBusinesses(), listPortfolioProjects({ includeUnpublished: true }), listBlogArticles({ includeDrafts: true }), listAgentJobs()]);
   return (
     <main className="admin-root">
       <aside className="admin-sidebar">
@@ -21,6 +22,7 @@ export default async function AdminPage() {
           <a href="#overview" className="active"><span>⌂</span>Overview</a>
           <a href="#pipeline"><span>◇</span>Businesses</a>
           <a href="#projects"><span>▦</span>Projects</a>
+          <a href="#articles"><span>¶</span>Articles <i>{articles.filter((article) => article.status === "draft").length}</i></a>
           <a href="#pipeline"><span>▱</span>Previews</a>
           <a href="#pipeline"><span>↗</span>Outreach</a>
           <a href="#pipeline"><span>✓</span>Approvals</a>
@@ -36,6 +38,7 @@ export default async function AdminPage() {
         {admin.localPreview ? <div className="preview-access-note">Local preview mode. Production access stays blocked until <strong>ADMIN_EMAILS</strong> is configured.</div> : null}
         <AdminCRM initialBusinesses={businesses} />
         <div className="admin-content-section"><AdminProjects initialProjects={projects} /></div>
+        <div className="admin-content-section"><AdminArticles initialArticles={articles} /></div>
         <section className="agent-hooks" id="agent-hooks">
           <div><p className="admin-kicker">Workflow foundation</p><h2>Queue work now.<br />Automate later.</h2><p className="queue-count">{jobs.length} internal {jobs.length === 1 ? "item" : "items"} waiting for your review.</p></div>
           <div className="hook-list">

@@ -55,6 +55,30 @@ export const portfolioProjects = sqliteTable(
   (table) => [index("idx_portfolio_projects_order").on(table.published, table.sortOrder)],
 );
 
+export const blogArticles = sqliteTable(
+  "blog_articles",
+  {
+    id: text("id").primaryKey(),
+    title: text("title").notNull(),
+    slug: text("slug").notNull().unique(),
+    excerpt: text("excerpt").notNull().default(""),
+    body: text("body").notNull().default(""),
+    category: text("category").notNull().default("Studio notes"),
+    coverImage: text("cover_image"),
+    coverAlt: text("cover_alt").notNull().default(""),
+    coverObjectKey: text("cover_object_key"),
+    coverContentType: text("cover_content_type"),
+    status: text("status").notNull().default("draft"),
+    seoTitle: text("seo_title"),
+    seoDescription: text("seo_description"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    publishedAt: text("published_at"),
+    createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [index("idx_blog_articles_status_order").on(table.status, table.sortOrder)],
+);
+
 export const mediaAssets = sqliteTable(
   "media_assets",
   {

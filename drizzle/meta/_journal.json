@@ -22,6 +22,13 @@
       "when": 1786203600000,
       "tag": "0002_portfolio_projects",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1786531277122,
+      "tag": "0003_parallel_amazoness",
+      "breakpoints": true
     }
   ]
 }
