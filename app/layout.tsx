@@ -26,9 +26,14 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description:
       "Independent full-stack developer and digital studio building useful websites, apps, commerce experiences and business platforms in South Africa.",
+    applicationName: "Leslie Chiunda",
+    authors: [{ name: "Leslie Chiunda", url: "/#about" }],
+    creator: "Leslie Chiunda",
+    publisher: "Leslie Chiunda",
     icons: {
-      icon: [{ url: "/icon.png", type: "image/png" }],
-      apple: [{ url: "/apple-icon.png", type: "image/png" }],
+      icon: [{ url: "/favicon.ico?v=3", sizes: "any" }, { url: "/icon.png?v=3", type: "image/png", sizes: "263x264" }],
+      shortcut: [{ url: "/favicon.ico?v=3" }],
+      apple: [{ url: "/apple-icon.png?v=3", type: "image/png", sizes: "180x180" }],
     },
     openGraph: {
       type: "website",

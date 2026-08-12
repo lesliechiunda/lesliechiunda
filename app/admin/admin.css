@@ -127,6 +127,12 @@
 .article-cover-preview { display: block; width: 100%; height: auto; max-height: 390px; object-fit: contain; border-radius: 5px; background: #e8e7df; }
 .article-cover-preview--empty { min-height: 180px; display: grid; place-items: center; color: #8b9087; font-size: 9px; border: 1px dashed #cbd0c7; }
 .article-body-input { min-height: 360px; font-family: Georgia, serif; font-size: 13px !important; line-height: 1.55; }
+.article-analytics { margin: 14px 0; padding: 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; border: 1px solid #dfe3dc; border-radius: 6px; background: #f8faf3; }
+.article-analytics div { min-height: 64px; padding: 10px; border-radius: 5px; background: #fff; }
+.article-analytics span, .article-analytics strong { display: block; }
+.article-analytics span { color: #777d73; font-size: 8px; text-transform: uppercase; letter-spacing: .08em; }
+.article-analytics strong { margin-top: 6px; font-size: 22px; }
+.article-analytics small { grid-column: 1 / -1; color: #777d73; font-size: 8px; }
 .safety-note strong { font-size: 9px; }
 .safety-note p { margin: 6px 0 0; color: #6d7469; font-size: 8px; line-height: 1.5; }
 .agent-hooks { padding: 80px 4vw 100px; background: #20231e; color: #f0f1eb; display: grid; grid-template-columns: 40% 1fr; gap: 8%; }

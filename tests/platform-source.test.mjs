@@ -56,11 +56,34 @@ test("blog drafts are editable in admin and excluded from public listings", asyn
   ]);
   assert.match(schema, /blogArticles/);
   assert.match(repository, /status: "draft"/);
-  assert.match(repository, /article\.status === "published" && Boolean\(article\.publicationApprovedAt\)/);
+  assert.match(repository, /eq\(blogArticles\.status, "published"\)/);
+  assert.match(repository, /isNotNull\(blogArticles\.publicationApprovedAt\)/);
   assert.match(admin, /Drafts are private/);
+  assert.match(admin, /Visibility changes apply immediately/);
   assert.match(admin, /Review draft/);
   assert.match(publicBlog, /listBlogArticles\(\)/);
   assert.match(articleRoute, /getAdminForApi/);
+});
+
+test("public article sharing records private aggregate analytics", async () => {
+  const [schema, engagement, route, admin] = await Promise.all([
+    read("db/schema.ts"), read("app/blog/ArticleEngagement.tsx"), read("app/api/articles/[id]/analytics/route.ts"), read("app/admin/AdminArticles.tsx"),
+  ]);
+  assert.match(schema, /articleAnalytics/);
+  assert.match(engagement, /Share article/);
+  assert.match(engagement, /Copy link/);
+  assert.match(route, /recordArticleAnalytics/);
+  assert.doesNotMatch(route, /listArticleAnalytics/);
+  assert.match(admin, /Private analytics/);
+});
+
+test("article metadata identifies Leslie as author and supports rich previews", async () => {
+  const articlePage = await read("app/blog/[slug]/page.tsx");
+  assert.match(articlePage, /type: "article"/);
+  assert.match(articlePage, /Published by Leslie Chiunda/);
+  assert.match(articlePage, /authors: \["Leslie Chiunda"\]/);
+  assert.match(articlePage, /summary_large_image/);
+  assert.match(articlePage, /canonical/);
 });
 
 test("article covers can be uploaded and removed through protected storage routes", async () => {

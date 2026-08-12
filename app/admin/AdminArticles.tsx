@@ -2,14 +2,14 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useRef, useState } from "react";
-import type { BlogArticleRecord } from "../../lib/repository";
+import type { ArticleAnalyticsRecord, BlogArticleRecord } from "../../lib/repository";
 
 type ArticleForm = Pick<BlogArticleRecord, "title" | "slug" | "excerpt" | "body" | "category" | "coverImage" | "coverAlt" | "status" | "seoTitle" | "seoDescription" | "sortOrder" | "publishedAt">;
 const blank: ArticleForm = { title: "", slug: "", excerpt: "", body: "", category: "Studio notes", coverImage: null, coverAlt: "", status: "draft", seoTitle: null, seoDescription: null, sortOrder: 0, publishedAt: null };
 const orderArticles = (items: BlogArticleRecord[]) => [...items].sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title));
 const fromArticle = (article: BlogArticleRecord): ArticleForm => ({ title: article.title, slug: article.slug, excerpt: article.excerpt, body: article.body, category: article.category, coverImage: article.coverImage, coverAlt: article.coverAlt, status: article.status, seoTitle: article.seoTitle, seoDescription: article.seoDescription, sortOrder: article.sortOrder, publishedAt: article.publishedAt });
 
-export default function AdminArticles({ initialArticles }: { initialArticles: BlogArticleRecord[] }) {
+export default function AdminArticles({ initialArticles, initialAnalytics }: { initialArticles: BlogArticleRecord[]; initialAnalytics: ArticleAnalyticsRecord[] }) {
   const [articles, setArticles] = useState(orderArticles(initialArticles));
   const [selectedId, setSelectedId] = useState(initialArticles[0]?.id ?? "");
   const selected = articles.find((article) => article.id === selectedId) ?? articles[0];
@@ -43,6 +43,24 @@ export default function AdminArticles({ initialArticles }: { initialArticles: Bl
       setArticles((current) => orderArticles(current.map((article) => article.id === selected.id ? payload.article! : article))); setForm(fromArticle(payload.article));
       setMessage(payload.article.status === "published" ? "Article saved and published." : "Draft saved. It remains private.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Could not save article."); }
+    finally { setSaving(false); }
+  }
+
+  async function changeVisibility(status: "draft" | "published") {
+    if (!selected || status === form.status) return;
+    setSaving(true); setMessage("");
+    try {
+      const response = await fetch(`/api/admin/articles/${selected.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ status, publishedAt: form.publishedAt }),
+      });
+      const payload = await response.json() as { article?: BlogArticleRecord; error?: string };
+      if (!response.ok || !payload.article) throw new Error(payload.error ?? "Could not change article visibility.");
+      setArticles((current) => orderArticles(current.map((article) => article.id === selected.id ? payload.article! : article)));
+      setForm(fromArticle(payload.article));
+      setMessage(status === "draft" ? "Article is private and has been removed from the public blog." : "Article is now published publicly.");
+    } catch (error) { setMessage(error instanceof Error ? error.message : "Could not change article visibility."); }
     finally { setSaving(false); }
   }
 
@@ -107,7 +125,13 @@ export default function AdminArticles({ initialArticles }: { initialArticles: Bl
       {selected && !creating ? <div className="record-panel article-editor">
         {form.coverImage ? <img className="article-cover-preview" src={`${form.coverImage}${selected.coverObjectKey ? `?v=${encodeURIComponent(selected.updatedAt)}` : ""}`} alt={form.coverAlt} /> : <div className="article-cover-preview article-cover-preview--empty">No cover image</div>}
         <div className="media-upload"><div><p>Cover image</p><input ref={fileRef} className="visually-hidden" id="article-cover-file" type="file" accept="image/jpeg,image/png,image/webp,image/avif" /><button className="file-picker" type="button" onClick={() => fileRef.current?.click()}>Choose image</button></div><button type="button" disabled={saving} onClick={uploadCover}>Upload selected</button>{form.coverImage ? <button type="button" className="remove-media" disabled={saving} onClick={removeCover}>Remove</button> : null}<small>JPG, PNG, WebP or AVIF · maximum 8 MB</small></div>
-        <ArticleFields form={form} field={field} />
+        <div className="article-analytics" aria-label="Private article analytics">
+          <div><span>Views</span><strong>{initialAnalytics.find((item) => item.articleId === selected.id)?.views ?? 0}</strong></div>
+          <div><span>Reads</span><strong>{initialAnalytics.find((item) => item.articleId === selected.id)?.reads ?? 0}</strong></div>
+          <div><span>Shares</span><strong>{initialAnalytics.find((item) => item.articleId === selected.id)?.shares ?? 0}</strong></div>
+          <small>Private analytics · refresh Admin for the latest totals</small>
+        </div>
+        <ArticleFields form={form} field={field} saving={saving} onVisibilityChange={changeVisibility} />
         <div className="reorder-actions"><span>Order</span><button type="button" disabled={saving} onClick={() => move(-1)}>Move up</button><button type="button" disabled={saving} onClick={() => move(1)}>Move down</button></div>
         <div className="editor-actions"><button type="button" className="danger-button" disabled={saving} onClick={deleteArticle}>Delete</button><a className="archive-button" href={`/admin/article-preview/${selected.id}`} target="_blank" rel="noreferrer">Review draft ↗</a><button type="button" className="admin-primary" disabled={saving} onClick={save}>{saving ? "Saving…" : "Save article"}</button></div>
       </div> : null}
@@ -116,7 +140,7 @@ export default function AdminArticles({ initialArticles }: { initialArticles: Bl
   </section>;
 }
 
-function ArticleFields({ form, field }: { form: ArticleForm; field: <K extends keyof ArticleForm>(key: K, value: ArticleForm[K]) => void }) {
+function ArticleFields({ form, field, saving = false, onVisibilityChange }: { form: ArticleForm; field: <K extends keyof ArticleForm>(key: K, value: ArticleForm[K]) => void; saving?: boolean; onVisibilityChange?: (status: "draft" | "published") => void }) {
   return <div className="listing-form">
     <label className="form-field"><span>Title</span><input required value={form.title} onChange={(event) => field("title", event.target.value)} /></label>
     <div className="form-pair"><label className="form-field"><span>URL slug</span><input value={form.slug} placeholder="created-from-title-if-empty" onChange={(event) => field("slug", event.target.value)} /></label><label className="form-field"><span>Category</span><input value={form.category} onChange={(event) => field("category", event.target.value)} /></label></div>
@@ -126,7 +150,7 @@ function ArticleFields({ form, field }: { form: ArticleForm; field: <K extends k
     <div className="form-pair"><label className="form-field"><span>SEO title</span><input value={form.seoTitle ?? ""} onChange={(event) => field("seoTitle", event.target.value || null)} /></label><label className="form-field"><span>Display order</span><input type="number" value={form.sortOrder} onChange={(event) => field("sortOrder", Number(event.target.value))} /></label></div>
     <label className="form-field"><span>SEO description</span><textarea rows={3} value={form.seoDescription ?? ""} onChange={(event) => field("seoDescription", event.target.value || null)} /></label>
     <label className="form-field"><span>Publication date & time</span><input type="datetime-local" value={toDateTimeLocal(form.publishedAt)} onChange={(event) => field("publishedAt", event.target.value ? new Date(event.target.value).toISOString() : null)} /><small>Set any earlier date and time before publishing, or update it later.</small></label>
-    <label className="form-field"><span>Publishing status</span><select value={form.status} onChange={(event) => field("status", event.target.value)}><option value="draft">Draft — private</option><option value="published">Published — public</option></select></label>
+    <label className="form-field"><span>Publishing status</span><select disabled={saving} value={form.status} onChange={(event) => { const status = event.target.value as "draft" | "published"; field("status", status); onVisibilityChange?.(status); }}><option value="draft">Draft — private</option><option value="published">Published — public</option></select><small>{onVisibilityChange ? "Visibility changes apply immediately. Other edits still use Save article." : "New articles stay private until you publish them."}</small></label>
   </div>;
 }
 

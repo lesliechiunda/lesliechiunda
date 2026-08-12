@@ -26,6 +26,11 @@
 .article-byline p { margin: 0; color: #6a6c64; font-size: 9px; line-height: 1.35; }
 .article-byline strong, .article-byline time { display: block; color: #1b1c18; font-weight: 650; }
 .article-byline time { color: #777970; font-weight: 450; }
+.article-engagement { min-height: 44px; margin: 24px auto 0; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.article-engagement button { min-height: 38px; padding: 0 14px; border: 1px solid rgba(27,28,24,.22); border-radius: 999px; background: transparent; color: inherit; font-size: 10px; font-weight: 680; cursor: pointer; }
+.article-engagement button:hover { background: #1b1c18; color: #f3f0e7; }
+.article-engagement button span { margin-left: 9px; }
+.article-engagement small { min-width: 68px; color: #6a6c64; font-size: 9px; text-align: left; }
 .article-lead-image { max-width: 1440px; margin: 0 auto; padding: 0 3vw; }
 .article-lead-image img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: contain; background: #dedbd1; }
 .article-body { max-width: 760px; margin: 7vw auto 0; padding: 0 25px; }
@@ -40,6 +45,8 @@
   .blog-grid { grid-template-columns: 1fr; gap: 70px; }
   .blog-index { padding: 70px 22px 100px; }
   .article-hero { padding: 140px 22px 60px; }
+  .article-engagement { flex-wrap: wrap; }
+  .article-engagement small { flex-basis: 100%; min-width: 0; text-align: center; }
   .article-lead-image { padding: 0; }
   .draft-preview-bar { padding: 10px 18px; gap: 20px; }
 }

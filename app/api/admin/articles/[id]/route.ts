@@ -22,14 +22,16 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   }
   if (!Object.keys(values).length) return NextResponse.json({ error: "No supported fields supplied." }, { status: 400 });
   try {
-    if (values.status) {
+    if (values.status === "draft") {
+      values.publicationApprovedAt = null;
+    } else if (values.status === "published") {
       const current = await getBlogArticleById(id);
-      values.publishedAt = values.status === "published" ? values.publishedAt ?? current?.publishedAt ?? new Date().toISOString() : values.publishedAt ?? null;
-      values.publicationApprovedAt = values.status === "published" ? new Date().toISOString() : null;
+      values.publishedAt = values.publishedAt ?? current?.publishedAt ?? new Date().toISOString();
+      values.publicationApprovedAt = new Date().toISOString();
     }
     const article = await updateBlogArticle(id, values);
     if (!article) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    return NextResponse.json({ article });
+    return NextResponse.json({ article }, { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } });
   } catch {
     return NextResponse.json({ error: "Could not update the article. Check that its URL is unique." }, { status: 503 });
   }
