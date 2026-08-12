@@ -16,12 +16,12 @@ const approvalOptions = ["needs_review", "approved_for_preview", "approved_for_o
 type ListingForm = {
   name: string; slug: string; industry: string; city: string; website: string; contactName: string;
   contactEmail: string; contactPhone: string; eyebrow: string; headline: string; summary: string;
-  services: string; notes: string; priority: number; liveUrl: string;
+  services: string; notes: string; priority: number; liveUrl: string; featured: boolean;
 };
 
 const emptyForm: ListingForm = {
   name: "", slug: "", industry: "", city: "", website: "", contactName: "", contactEmail: "",
-  contactPhone: "", eyebrow: "", headline: "", summary: "", services: "", notes: "", priority: 2, liveUrl: "",
+  contactPhone: "", eyebrow: "", headline: "", summary: "", services: "", notes: "", priority: 2, liveUrl: "", featured: false,
 };
 
 function toForm(record: BusinessRecord): ListingForm {
@@ -30,7 +30,7 @@ function toForm(record: BusinessRecord): ListingForm {
   return {
     name: record.name, slug: record.slug, industry: record.industry, city: record.city, website: record.website ?? "",
     contactName: record.contactName ?? "", contactEmail: record.contactEmail ?? "", contactPhone: record.contactPhone ?? "",
-    eyebrow: record.eyebrow, headline: record.headline, summary: record.summary, services, notes: record.notes, priority: record.priority, liveUrl: record.previewUrl ?? "",
+    eyebrow: record.eyebrow, headline: record.headline, summary: record.summary, services, notes: record.notes, priority: record.priority, liveUrl: record.previewUrl ?? "", featured: record.featured,
   };
 }
 
@@ -72,7 +72,7 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
     setUploadFile(null);
   }
 
-  async function patchBusiness(id: string, values: Record<string, string | number | null>) {
+  async function patchBusiness(id: string, values: Record<string, string | number | boolean | null>) {
     setSaving(true); setMessage("");
     try {
       const response = await fetch(`/api/admin/businesses/${id}`, {
@@ -230,6 +230,7 @@ export default function AdminCRM({ initialBusinesses }: { initialBusinesses: Bus
               <div className="form-pair"><Field label="Business name" value={form.name} onChange={(v) => setField("name", v)} /><Field label="URL slug" value={form.slug} onChange={(v) => setField("slug", v)} /></div>
               <div className="form-pair"><Field label="Industry" value={form.industry} onChange={(v) => setField("industry", v)} /><Field label="City" value={form.city} onChange={(v) => setField("city", v)} /></div>
               <Field label="Display priority (lower appears first)" value={form.priority} onChange={(v) => setField("priority", Number(v))} type="number" />
+              <label className="publish-toggle"><input type="checkbox" checked={form.featured} onChange={(event) => setField("featured", event.target.checked)} /> Feature on homepage</label>
               <Field label="Website" value={form.website} onChange={(v) => setField("website", v)} type="url" />
               <Field label="Live project URL" value={form.liveUrl} onChange={(v) => setField("liveUrl", v)} type="url" />
               <Field label="Project eyebrow" value={form.eyebrow} onChange={(v) => setField("eyebrow", v)} />

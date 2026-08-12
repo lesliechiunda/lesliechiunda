@@ -4,8 +4,8 @@
 import { useState } from "react";
 import type { PortfolioProjectRecord } from "../../lib/repository";
 
-type ProjectForm = Pick<PortfolioProjectRecord, "title" | "category" | "summary" | "href" | "image" | "tone" | "published" | "sortOrder">;
-const blank: ProjectForm = { title: "", category: "Website", summary: "", href: "", image: null, tone: "lime", published: true, sortOrder: 0 };
+type ProjectForm = Pick<PortfolioProjectRecord, "title" | "category" | "summary" | "href" | "image" | "tone" | "published" | "featured" | "sortOrder">;
+const blank: ProjectForm = { title: "", category: "Website", summary: "", href: "", image: null, tone: "lime", published: true, featured: false, sortOrder: 0 };
 
 export default function AdminProjects({ initialProjects }: { initialProjects: PortfolioProjectRecord[] }) {
   const orderProjects = (items: PortfolioProjectRecord[]) => [...items].sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title));
@@ -99,7 +99,7 @@ export default function AdminProjects({ initialProjects }: { initialProjects: Po
   </section>;
 }
 
-function fromProject(project: PortfolioProjectRecord): ProjectForm { return { title: project.title, category: project.category, summary: project.summary, href: project.href, image: project.image, tone: project.tone, published: project.published, sortOrder: project.sortOrder }; }
+function fromProject(project: PortfolioProjectRecord): ProjectForm { return { title: project.title, category: project.category, summary: project.summary, href: project.href, image: project.image, tone: project.tone, published: project.published, featured: project.featured, sortOrder: project.sortOrder }; }
 
 function ProjectFields({ form, field }: { form: ProjectForm; field: <K extends keyof ProjectForm>(key: K, value: ProjectForm[K]) => void }) {
   return <div className="listing-form">
@@ -111,5 +111,6 @@ function ProjectFields({ form, field }: { form: ProjectForm; field: <K extends k
     <label className="form-field"><span>Summary</span><textarea rows={4} value={form.summary} onChange={(e) => field("summary", e.target.value)} /></label>
     <div className="form-pair"><label className="form-field"><span>Colour</span><select value={form.tone} onChange={(e) => field("tone", e.target.value)}><option value="lime">Lime</option><option value="clay">Clay</option><option value="blue">Blue</option><option value="ink">Ink</option></select></label><label className="form-field"><span>Display order</span><input type="number" value={form.sortOrder} onChange={(e) => field("sortOrder", Number(e.target.value))} /></label></div>
     <label className="publish-toggle"><input type="checkbox" checked={form.published} onChange={(e) => field("published", e.target.checked)} /> Show on public website</label>
+    <label className="publish-toggle"><input type="checkbox" checked={form.featured} onChange={(e) => field("featured", e.target.checked)} /> Feature on homepage</label>
   </div>;
 }

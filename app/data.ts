@@ -5,6 +5,7 @@ export type Project = {
   href: string;
   image?: string;
   tone: "lime" | "clay" | "blue" | "ink";
+  featured?: boolean;
 };
 
 export const projects: Project[] = [
@@ -16,6 +17,7 @@ export const projects: Project[] = [
     href: "https://www.finlit.dev/",
     image: "/project-finlit.jpg",
     tone: "lime",
+    featured: true,
   },
   {
     title: "Remember Us",
@@ -25,6 +27,7 @@ export const projects: Project[] = [
     href: "https://www.rememberus.co.za/",
     image: "/project-remember-us.jpg",
     tone: "blue",
+    featured: true,
   },
   {
     title: "Kahari Beauty",
@@ -34,6 +37,7 @@ export const projects: Project[] = [
     href: "https://kaharibeauty.com/",
     image: "/project-kahari.jpg",
     tone: "clay",
+    featured: true,
   },
   {
     title: "11th Parcel Free",

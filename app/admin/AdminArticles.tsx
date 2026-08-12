@@ -4,10 +4,10 @@
 import { useRef, useState } from "react";
 import type { BlogArticleRecord } from "../../lib/repository";
 
-type ArticleForm = Pick<BlogArticleRecord, "title" | "slug" | "excerpt" | "body" | "category" | "coverImage" | "coverAlt" | "status" | "seoTitle" | "seoDescription" | "sortOrder">;
-const blank: ArticleForm = { title: "", slug: "", excerpt: "", body: "", category: "Studio notes", coverImage: null, coverAlt: "", status: "draft", seoTitle: null, seoDescription: null, sortOrder: 0 };
+type ArticleForm = Pick<BlogArticleRecord, "title" | "slug" | "excerpt" | "body" | "category" | "coverImage" | "coverAlt" | "status" | "seoTitle" | "seoDescription" | "sortOrder" | "publishedAt">;
+const blank: ArticleForm = { title: "", slug: "", excerpt: "", body: "", category: "Studio notes", coverImage: null, coverAlt: "", status: "draft", seoTitle: null, seoDescription: null, sortOrder: 0, publishedAt: null };
 const orderArticles = (items: BlogArticleRecord[]) => [...items].sort((a, b) => a.sortOrder - b.sortOrder || a.title.localeCompare(b.title));
-const fromArticle = (article: BlogArticleRecord): ArticleForm => ({ title: article.title, slug: article.slug, excerpt: article.excerpt, body: article.body, category: article.category, coverImage: article.coverImage, coverAlt: article.coverAlt, status: article.status, seoTitle: article.seoTitle, seoDescription: article.seoDescription, sortOrder: article.sortOrder });
+const fromArticle = (article: BlogArticleRecord): ArticleForm => ({ title: article.title, slug: article.slug, excerpt: article.excerpt, body: article.body, category: article.category, coverImage: article.coverImage, coverAlt: article.coverAlt, status: article.status, seoTitle: article.seoTitle, seoDescription: article.seoDescription, sortOrder: article.sortOrder, publishedAt: article.publishedAt });
 
 export default function AdminArticles({ initialArticles }: { initialArticles: BlogArticleRecord[] }) {
   const [articles, setArticles] = useState(orderArticles(initialArticles));
@@ -125,6 +125,14 @@ function ArticleFields({ form, field }: { form: ArticleForm; field: <K extends k
     <label className="form-field"><span>Cover image alt text</span><input value={form.coverAlt} onChange={(event) => field("coverAlt", event.target.value)} /></label>
     <div className="form-pair"><label className="form-field"><span>SEO title</span><input value={form.seoTitle ?? ""} onChange={(event) => field("seoTitle", event.target.value || null)} /></label><label className="form-field"><span>Display order</span><input type="number" value={form.sortOrder} onChange={(event) => field("sortOrder", Number(event.target.value))} /></label></div>
     <label className="form-field"><span>SEO description</span><textarea rows={3} value={form.seoDescription ?? ""} onChange={(event) => field("seoDescription", event.target.value || null)} /></label>
+    <label className="form-field"><span>Publication date & time</span><input type="datetime-local" value={toDateTimeLocal(form.publishedAt)} onChange={(event) => field("publishedAt", event.target.value ? new Date(event.target.value).toISOString() : null)} /><small>Set any earlier date and time before publishing, or update it later.</small></label>
     <label className="form-field"><span>Publishing status</span><select value={form.status} onChange={(event) => field("status", event.target.value)}><option value="draft">Draft — private</option><option value="published">Published — public</option></select></label>
   </div>;
+}
+
+function toDateTimeLocal(value: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 }
