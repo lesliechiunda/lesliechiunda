@@ -11,6 +11,7 @@ export function Header({ dark = false }: { dark?: boolean }) {
       </a>
       <nav aria-label="Main navigation">
         <a href="/work">Work</a>
+        <a href="/blog">Blog</a>
         <a href="/#about">About</a>
       </nav>
       <a href="mailto:lesliechiunda@outlook.com" className="nav-cta">

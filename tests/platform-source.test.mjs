@@ -46,7 +46,28 @@ test("public navigation uses reliable document links", async () => {
   assert.match(components, /<a href="\/work">Work<\/a>/);
   assert.doesNotMatch(components, /href="\/concepts"/);
   assert.match(components, /<a href="\/#about">About<\/a>/);
+  assert.match(components, /<a href="\/blog">Blog<\/a>/);
   assert.doesNotMatch(components, /from "next\/link"/);
+});
+
+test("blog drafts are editable in admin and excluded from public listings", async () => {
+  const [schema, repository, admin, publicBlog, articleRoute] = await Promise.all([
+    read("db/schema.ts"), read("lib/repository.ts"), read("app/admin/AdminArticles.tsx"), read("app/blog/page.tsx"), read("app/api/admin/articles/[id]/route.ts"),
+  ]);
+  assert.match(schema, /blogArticles/);
+  assert.match(repository, /status: "draft"/);
+  assert.match(repository, /rows\.filter\(\(article\) => article\.status === "published"\)/);
+  assert.match(admin, /Drafts are private/);
+  assert.match(admin, /Review draft/);
+  assert.match(publicBlog, /listBlogArticles\(\)/);
+  assert.match(articleRoute, /getAdminForApi/);
+});
+
+test("article covers can be uploaded and removed through protected storage routes", async () => {
+  const coverRoute = await read("app/api/admin/articles/[id]/cover/route.ts");
+  assert.match(coverRoute, /getAdminForApi/);
+  assert.match(coverRoute, /env\.MEDIA\.put/);
+  assert.match(coverRoute, /export async function DELETE/);
 });
 
 test("concepts are consolidated into grouped work without image overlays", async () => {
