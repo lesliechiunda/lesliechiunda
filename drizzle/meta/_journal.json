@@ -43,6 +43,13 @@
       "when": 1786556725783,
       "tag": "0005_awesome_adam_warlock",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1786560561773,
+      "tag": "0006_nice_echo",
+      "breakpoints": true
     }
   ]
 }

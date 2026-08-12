@@ -1,12 +1,13 @@
-import { asc, count, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { getDb } from "../db";
-import { agentJobs, approvals, blogArticles, businesses, mediaAssets, outreachEvents, portfolioProjects } from "../db/schema";
+import { agentJobs, approvals, articleAnalytics, blogArticles, businesses, mediaAssets, outreachEvents, portfolioProjects } from "../db/schema";
 import { projects as staticProjects } from "../app/data";
 
 export type BusinessRecord = typeof businesses.$inferSelect;
 export type PortfolioProjectRecord = typeof portfolioProjects.$inferSelect;
 export type AgentJobRecord = typeof agentJobs.$inferSelect;
 export type BlogArticleRecord = typeof blogArticles.$inferSelect;
+export type ArticleAnalyticsRecord = typeof articleAnalytics.$inferSelect;
 export type BusinessInput = Partial<Omit<typeof businesses.$inferInsert, "id" | "createdAt" | "updatedAt" | "lastActivityAt">> & {
   name: string;
   slug: string;
@@ -329,8 +330,10 @@ export async function listBlogArticles(options: { includeDrafts?: boolean } = {}
   try {
     const db = getDb();
     await seedBlogArticles();
-    const rows = await db.select().from(blogArticles).orderBy(asc(blogArticles.sortOrder), desc(blogArticles.updatedAt));
-    return options.includeDrafts ? rows : rows.filter((article) => article.status === "published" && Boolean(article.publicationApprovedAt));
+    if (options.includeDrafts) return await db.select().from(blogArticles).orderBy(asc(blogArticles.sortOrder), desc(blogArticles.updatedAt));
+    return await db.select().from(blogArticles)
+      .where(and(eq(blogArticles.status, "published"), isNotNull(blogArticles.publicationApprovedAt)))
+      .orderBy(asc(blogArticles.sortOrder), desc(blogArticles.updatedAt));
   } catch {
     return options.includeDrafts ? demoBlogArticles : [];
   }
@@ -347,8 +350,11 @@ export async function getBlogArticleBySlug(slug: string, options: { includeDraft
   try {
     const db = getDb();
     await seedBlogArticles();
-    const [article] = await db.select().from(blogArticles).where(eq(blogArticles.slug, slug)).limit(1);
-    if (!article || (!options.includeDrafts && (article.status !== "published" || !article.publicationApprovedAt))) return null;
+    const visibility = options.includeDrafts
+      ? eq(blogArticles.slug, slug)
+      : and(eq(blogArticles.slug, slug), eq(blogArticles.status, "published"), isNotNull(blogArticles.publicationApprovedAt));
+    const [article] = await db.select().from(blogArticles).where(visibility).limit(1);
+    if (!article) return null;
     return article;
   } catch {
     const article = demoBlogArticles.find((item) => item.slug === slug) ?? null;
@@ -375,6 +381,30 @@ export async function deleteBlogArticle(id: string) {
   const db = getDb();
   const [deleted] = await db.delete(blogArticles).where(eq(blogArticles.id, id)).returning();
   return deleted ?? null;
+}
+
+export async function listArticleAnalytics(): Promise<ArticleAnalyticsRecord[]> {
+  try {
+    return await getDb().select().from(articleAnalytics).orderBy(desc(articleAnalytics.updatedAt));
+  } catch {
+    return [];
+  }
+}
+
+export async function recordArticleAnalytics(articleId: string, event: "view" | "read" | "share") {
+  const db = getDb();
+  const now = new Date().toISOString();
+  const increment = { views: event === "view" ? 1 : 0, reads: event === "read" ? 1 : 0, shares: event === "share" ? 1 : 0 };
+  const [record] = await db.insert(articleAnalytics).values({ articleId, ...increment, updatedAt: now }).onConflictDoUpdate({
+    target: articleAnalytics.articleId,
+    set: {
+      views: sql`${articleAnalytics.views} + ${increment.views}`,
+      reads: sql`${articleAnalytics.reads} + ${increment.reads}`,
+      shares: sql`${articleAnalytics.shares} + ${increment.shares}`,
+      updatedAt: now,
+    },
+  }).returning();
+  return record;
 }
 
 export async function listPortfolioProjects(options: { includeUnpublished?: boolean } = {}) {

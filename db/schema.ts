@@ -82,6 +82,14 @@ export const blogArticles = sqliteTable(
   (table) => [index("idx_blog_articles_status_order").on(table.status, table.sortOrder)],
 );
 
+export const articleAnalytics = sqliteTable("article_analytics", {
+  articleId: text("article_id").primaryKey().references(() => blogArticles.id, { onDelete: "cascade" }),
+  views: integer("views").notNull().default(0),
+  reads: integer("reads").notNull().default(0),
+  shares: integer("shares").notNull().default(0),
+  updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const mediaAssets = sqliteTable(
   "media_assets",
   {

@@ -5,6 +5,7 @@ import { listBlogArticles } from "../../lib/repository";
 
 export const metadata: Metadata = { title: "Blog", description: "Practical notes on websites, digital products, design and building useful systems." };
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function BlogPage() {
   const articles = await listBlogArticles();
