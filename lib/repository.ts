@@ -75,6 +75,7 @@ export const demoBlogArticles: BlogArticleRecord[] = [
     seoDescription: "A practical guide to choosing the message, structure and actions that make a small-business website useful.",
     sortOrder: 0,
     publishedAt: null,
+    publicationApprovedAt: null,
     body: `A website can be technically impressive and still make a business harder to understand. Before choosing colours, animations or a long list of features, I start with a simpler question: what should a visitor understand and do next?
 
 ## Start with the decision
@@ -112,6 +113,7 @@ Once the message, action and proof are working together, features have a purpose
     seoDescription: "A practical product-development process from first conversation through design, build and release.",
     sortOrder: 1,
     publishedAt: null,
+    publicationApprovedAt: null,
     body: `Early product ideas are rarely tidy. They arrive as a frustration, a collection of notes or a sentence that begins with “what if”. The first stage of a good build is not writing code. It is finding the useful core of the idea.
 
 ## Define the outcome
@@ -151,6 +153,7 @@ A practical process does not remove ambition. It protects it. By proving the cor
     seoDescription: "The practical design and content signals that help local customers trust a business website.",
     sortOrder: 2,
     publishedAt: null,
+    publicationApprovedAt: null,
     body: `People often visit a local business website with a quiet question in mind: can I trust this company with my time, money or personal information? The answer is shaped by many small signals long before a visitor reaches the contact form.
 
 ## Be specific
@@ -186,7 +189,7 @@ export async function listBlogArticles(options: { includeDrafts?: boolean } = {}
     const db = getDb();
     await seedBlogArticles();
     const rows = await db.select().from(blogArticles).orderBy(asc(blogArticles.sortOrder), desc(blogArticles.updatedAt));
-    return options.includeDrafts ? rows : rows.filter((article) => article.status === "published");
+    return options.includeDrafts ? rows : rows.filter((article) => article.status === "published" && Boolean(article.publicationApprovedAt));
   } catch {
     return options.includeDrafts ? demoBlogArticles : [];
   }
@@ -204,7 +207,7 @@ export async function getBlogArticleBySlug(slug: string, options: { includeDraft
     const db = getDb();
     await seedBlogArticles();
     const [article] = await db.select().from(blogArticles).where(eq(blogArticles.slug, slug)).limit(1);
-    if (!article || (!options.includeDrafts && article.status !== "published")) return null;
+    if (!article || (!options.includeDrafts && (article.status !== "published" || !article.publicationApprovedAt))) return null;
     return article;
   } catch {
     const article = demoBlogArticles.find((item) => item.slug === slug) ?? null;
