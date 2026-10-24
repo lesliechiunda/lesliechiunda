@@ -1,13 +1,13 @@
 import { and, asc, count, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { getDb } from "../db";
-import { agentJobs, approvals, articleAnalytics, blogArticles, businesses, mediaAssets, outreachEvents, portfolioProjects } from "../db/schema";
+import { articleAnalytics, blogArticles, businesses, invoices, mediaAssets, portfolioProjects } from "../db/schema";
 import { projects as staticProjects } from "../app/data";
 
 export type BusinessRecord = typeof businesses.$inferSelect;
 export type PortfolioProjectRecord = typeof portfolioProjects.$inferSelect;
-export type AgentJobRecord = typeof agentJobs.$inferSelect;
 export type BlogArticleRecord = typeof blogArticles.$inferSelect;
 export type ArticleAnalyticsRecord = typeof articleAnalytics.$inferSelect;
+export type InvoiceRecord = typeof invoices.$inferSelect;
 export type BusinessInput = Partial<Omit<typeof businesses.$inferInsert, "id" | "createdAt" | "updatedAt" | "lastActivityAt">> & {
   name: string;
   slug: string;
@@ -438,6 +438,37 @@ export async function deletePortfolioProject(id: string) {
   return deleted ?? null;
 }
 
+export async function listInvoices(): Promise<InvoiceRecord[]> {
+  return getDb().select().from(invoices).orderBy(desc(invoices.issueDate), desc(invoices.createdAt));
+}
+
+export async function getInvoice(id: string): Promise<InvoiceRecord | null> {
+  const [invoice] = await getDb().select().from(invoices).where(eq(invoices.id, id)).limit(1);
+  return invoice ?? null;
+}
+
+export type InvoiceValues = Pick<InvoiceRecord, "clientName" | "clientEmail" | "clientAddress" | "issueDate" | "dueDate" | "lineItems" | "subtotalCents" | "taxPercent" | "taxCents" | "totalCents" | "notes" | "status">;
+
+export async function createInvoice(values: InvoiceValues) {
+  const db = getDb();
+  const year = values.issueDate.slice(0, 4);
+  const existing = await db.select({ number: invoices.number }).from(invoices).where(sql`${invoices.number} LIKE ${`LC-${year}-%`}`);
+  const next = existing.reduce((largest, row) => Math.max(largest, Number(row.number.split("-").at(-1)) || 0), 0) + 1;
+  const now = new Date().toISOString();
+  const [invoice] = await db.insert(invoices).values({ id: crypto.randomUUID(), number: `LC-${year}-${String(next).padStart(4, "0")}`, ...values, createdAt: now, updatedAt: now }).returning();
+  return invoice;
+}
+
+export async function updateInvoice(id: string, values: InvoiceValues) {
+  const [invoice] = await getDb().update(invoices).set({ ...values, updatedAt: new Date().toISOString() }).where(eq(invoices.id, id)).returning();
+  return invoice ?? null;
+}
+
+export async function deleteInvoice(id: string) {
+  const [invoice] = await getDb().delete(invoices).where(eq(invoices.id, id)).returning();
+  return invoice ?? null;
+}
+
 export async function seedBusinesses() {
   const db = getDb();
   const [existing] = await db.select({ value: count() }).from(businesses);
@@ -458,17 +489,10 @@ export async function listBusinesses(): Promise<BusinessRecord[]> {
 export async function updateBusiness(
   id: string,
   values: Partial<Omit<BusinessRecord, "id" | "createdAt" | "updatedAt" | "lastActivityAt">>,
-  actorEmail: string,
 ) {
   const db = getDb();
   const now = new Date().toISOString();
   const [updated] = await db.update(businesses).set({ ...values, updatedAt: now, lastActivityAt: now }).where(eq(businesses.id, id)).returning();
-  if (values.approvalStatus) {
-    await db.insert(approvals).values({
-      id: crypto.randomUUID(), businessId: id, kind: "workflow", decision: values.approvalStatus,
-      requestedBy: "admin_ui", decidedBy: actorEmail, decidedAt: now,
-    });
-  }
   return updated;
 }
 
@@ -540,79 +564,4 @@ export async function deleteBusiness(id: string) {
   const assets = await db.select().from(mediaAssets).where(eq(mediaAssets.businessId, id));
   const [deleted] = await db.delete(businesses).where(eq(businesses.id, id)).returning();
   return deleted ? { business: deleted, assets } : null;
-}
-
-export async function createAdminWorkflowJob(input: {
-  businessId: string;
-  jobType: "preview_build_request" | "outreach_draft";
-  actorEmail: string;
-}) {
-  const db = getDb();
-  const now = new Date().toISOString();
-  const id = crypto.randomUUID();
-  const [business] = await db.select().from(businesses).where(eq(businesses.id, input.businessId)).limit(1);
-  if (!business) return null;
-
-  const actions = [
-    db.insert(agentJobs).values({
-      id,
-      businessId: business.id,
-      jobType: input.jobType,
-      status: "queued",
-      payload: JSON.stringify({ requestedBy: input.actorEmail, businessName: business.name }),
-      requiresApproval: true,
-      createdAt: now,
-      updatedAt: now,
-    }),
-    db.update(businesses).set({
-      previewStatus: input.jobType === "preview_build_request" && business.previewStatus === "not_started" ? "draft" : business.previewStatus,
-      outreachStatus: input.jobType === "outreach_draft" ? "draft_ready" : business.outreachStatus,
-      updatedAt: now,
-      lastActivityAt: now,
-    }).where(eq(businesses.id, business.id)),
-  ];
-
-  if (input.jobType === "outreach_draft") {
-    actions.push(db.insert(outreachEvents).values({
-      id: crypto.randomUUID(),
-      businessId: business.id,
-      channel: "email",
-      status: "draft",
-      subject: `A website idea for ${business.name}`,
-      body: `Hi ${business.contactName || "there"},\n\nI put together an early website idea for ${business.name}. It is only a draft for your review—nothing has been published as an official business website or sent on your behalf.`,
-      createdAt: now,
-    }));
-  }
-
-  await db.batch(actions);
-  return { id, businessId: business.id, jobType: input.jobType };
-}
-
-export async function listAgentJobs(): Promise<AgentJobRecord[]> {
-  try {
-    const db = getDb();
-    return await db.select().from(agentJobs).orderBy(desc(agentJobs.updatedAt));
-  } catch {
-    return [];
-  }
-}
-
-export async function ingestAgentDiscovery(input: {
-  name: string; slug: string; industry?: string; city?: string; website?: string | null; notes?: string;
-}) {
-  const db = getDb();
-  const id = crypto.randomUUID();
-  const now = new Date().toISOString();
-  await db.batch([
-    db.insert(businesses).values({
-      id, name: input.name, slug: input.slug, industry: input.industry ?? "Other", city: input.city ?? "",
-      website: input.website ?? null, websiteStatus: input.website ? "has_website" : "none", source: "agent_discovery",
-      approvalStatus: "needs_review", notes: input.notes ?? "", createdAt: now, updatedAt: now, lastActivityAt: now,
-    }),
-    db.insert(agentJobs).values({
-      id: crypto.randomUUID(), businessId: id, jobType: "research_review", status: "waiting_for_approval",
-      payload: JSON.stringify(input), requiresApproval: true, createdAt: now, updatedAt: now,
-    }),
-  ]);
-  return { id, status: "needs_review" as const };
 }

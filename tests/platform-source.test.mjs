@@ -6,11 +6,11 @@ const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 test("portfolio records power both admin and the public project grid", async () => {
   const [schema, repository, admin, components] = await Promise.all([
-    read("db/schema.ts"), read("lib/repository.ts"), read("app/admin/AdminProjects.tsx"), read("app/components.tsx"),
+    read("db/schema.ts"), read("lib/repository.ts"), read("app/admin/AdminWork.tsx"), read("app/components.tsx"),
   ]);
   assert.match(schema, /portfolioProjects/);
   assert.match(repository, /listPortfolioProjects/);
-  assert.match(admin, /Show on public website/);
+  assert.match(admin, /Show on public Work page/);
   assert.match(components, /listPortfolioProjects\(\)/);
 });
 
@@ -26,19 +26,17 @@ test("admin API remains protected and supports portfolio create and update", asy
 
 test("outbound automation remains disabled", async () => {
   const adminPage = await read("app/admin/page.tsx");
-  assert.match(adminPage, /No mail provider or send action is connected/);
-  assert.doesNotMatch(adminPage, /sendEmail|sendMail/);
+  assert.doesNotMatch(adminPage, /Agent queue|Outreach|Approvals|Previews|AdminCRM|AdminProjects/);
 });
 
-test("admin can queue safe internal workflow work without sending anything", async () => {
-  const [queueRoute, admin] = await Promise.all([
-    read("app/api/admin/businesses/[id]/workflow/route.ts"), read("app/admin/AdminCRM.tsx"),
+test("invoice records and PDF downloads are owner protected", async () => {
+  const [createRoute, pdfRoute, admin] = await Promise.all([
+    read("app/api/admin/invoices/route.ts"), read("app/api/admin/invoices/[id]/pdf/route.ts"), read("app/admin/AdminInvoices.tsx"),
   ]);
-  assert.match(queueRoute, /getAdminForApi/);
-  assert.match(queueRoute, /createAdminWorkflowJob/);
-  assert.match(admin, /Queue website build/);
-  assert.match(admin, /Create outreach draft/);
-  assert.match(admin, /will not be sent automatically/);
+  assert.match(createRoute, /getAdminForApi/);
+  assert.match(pdfRoute, /getAdminForApi/);
+  assert.match(pdfRoute, /createInvoicePdf/);
+  assert.match(admin, /Download PDF/);
 });
 
 test("public navigation uses reliable document links", async () => {
@@ -106,14 +104,13 @@ test("professional networking cybersecurity and technology drafts are seeded wit
 });
 
 test("mobile navigation remains visible and homepage projects are explicitly featured", async () => {
-  const [styles, home, components, projects, crm, schema] = await Promise.all([
-    read("app/globals.css"), read("app/page.tsx"), read("app/components.tsx"), read("app/admin/AdminProjects.tsx"), read("app/admin/AdminCRM.tsx"), read("db/schema.ts"),
+  const [styles, home, components, work, schema] = await Promise.all([
+    read("app/globals.css"), read("app/page.tsx"), read("app/components.tsx"), read("app/admin/AdminWork.tsx"), read("db/schema.ts"),
   ]);
   assert.doesNotMatch(styles, /\.site-header nav \{ display: none; \}/);
   assert.match(home, /<ProjectGrid featured \/>/);
   assert.match(components, /!featured \|\| project\.featured/);
-  assert.match(projects, /Feature on homepage/);
-  assert.match(crm, /Feature on homepage/);
+  assert.match(work, /Feature on homepage/);
   assert.match(schema, /featured: integer/);
 });
 
@@ -152,24 +149,24 @@ test("concepts are consolidated into grouped work without image overlays", async
 
 test("business website cards use live project domains", async () => {
   const [components, repository] = await Promise.all([read("app/components.tsx"), read("lib/repository.ts")]);
-  assert.match(components, /donarmandorestaurants-demo\.lesliechiunda\.com/);
-  assert.match(components, /mctrenz\.co\.za/);
-  assert.match(components, /cataplanaportuguese-demo\.lesliechiunda\.com/);
+  assert.match(repository, /donarmandorestaurants-demo\.lesliechiunda\.com/);
+  assert.match(repository, /mctrenz\.co\.za/);
+  assert.match(repository, /cataplanaportuguese-demo\.lesliechiunda\.com/);
+  assert.match(components, /business\.previewUrl/);
   assert.doesNotMatch(components, /\/preview\//);
   assert.doesNotMatch(repository, /previewUrl: `\/preview/);
 });
 
-test("admin exposes create update reorder and delete controls", async () => {
-  const [crm, projects, businessRoute, projectRoute] = await Promise.all([
-    read("app/admin/AdminCRM.tsx"), read("app/admin/AdminProjects.tsx"),
+test("admin combines businesses and projects with create update image and delete controls", async () => {
+  const [work, businessRoute, projectRoute] = await Promise.all([
+    read("app/admin/AdminWork.tsx"),
     read("app/api/admin/businesses/[id]/route.ts"), read("app/api/admin/projects/[id]/route.ts"),
   ]);
-  assert.match(crm, /Choose & upload image/);
-  assert.match(crm, /Remove current/);
-  assert.match(crm, /Delete listing/);
-  assert.match(crm, /Move up/);
-  assert.match(projects, /Delete project/);
-  assert.match(projects, /Move down/);
+  assert.match(work, /Add business website/);
+  assert.match(work, /Add other project/);
+  assert.match(work, /Upload work image/);
+  assert.match(work, /Remove image/);
+  assert.match(work, /Feature on homepage/);
   assert.match(businessRoute, /export async function DELETE/);
   assert.match(projectRoute, /export async function DELETE/);
 });

@@ -90,6 +90,29 @@ export const articleAnalytics = sqliteTable("article_analytics", {
   updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const invoices = sqliteTable(
+  "invoices",
+  {
+    id: text("id").primaryKey(),
+    number: text("number").notNull().unique(),
+    status: text("status").notNull().default("draft"),
+    clientName: text("client_name").notNull(),
+    clientEmail: text("client_email").notNull().default(""),
+    clientAddress: text("client_address").notNull().default(""),
+    issueDate: text("issue_date").notNull(),
+    dueDate: text("due_date").notNull(),
+    lineItems: text("line_items").notNull().default("[]"),
+    subtotalCents: integer("subtotal_cents").notNull().default(0),
+    taxPercent: integer("tax_percent").notNull().default(0),
+    taxCents: integer("tax_cents").notNull().default(0),
+    totalCents: integer("total_cents").notNull().default(0),
+    notes: text("notes").notNull().default(""),
+    createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [index("idx_invoices_issue_date").on(table.issueDate)],
+);
+
 export const mediaAssets = sqliteTable(
   "media_assets",
   {

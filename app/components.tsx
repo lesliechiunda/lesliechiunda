@@ -2,6 +2,7 @@
 import type { ReactNode } from "react";
 import { type Project } from "./data";
 import { listBusinesses, listPortfolioProjects } from "../lib/repository";
+import { FaEnvelope, FaLinkedinIn, FaWhatsapp } from "react-icons/fa6";
 
 export function Header({ dark = false }: { dark?: boolean }) {
   return (
@@ -26,14 +27,12 @@ export function Footer() {
     <footer className="site-footer">
       <div>
         <p className="kicker">Have something useful to build?</p>
-        <p className="footer-title">Let&apos;s make it real.</p>
+        <p className="footer-title">Let&apos;s work together.</p>
       </div>
-      <a href="mailto:lesliechiunda@outlook.com" className="footer-mail">
-        lesliechiunda@outlook.com <span aria-hidden="true">↗</span>
-      </a>
       <div className="footer-contact-links" aria-label="Social and direct contact links">
-        <a href="https://www.linkedin.com/in/lesliechiunda/" target="_blank" rel="noreferrer">LinkedIn <span aria-hidden="true">↗</span></a>
-        <a href="https://wa.me/27794031161" target="_blank" rel="noreferrer">WhatsApp · +27 79 403 1161 <span aria-hidden="true">↗</span></a>
+        <a href="https://wa.me/27794031161" target="_blank" rel="noreferrer"><span className="contact-label"><span className="contact-icon" aria-hidden="true"><FaWhatsapp /></span> WhatsApp · +27 79 403 1161</span><span aria-hidden="true">↗</span></a>
+        <a href="https://www.linkedin.com/in/lesliechiunda/" target="_blank" rel="noreferrer"><span className="contact-label"><span className="contact-icon" aria-hidden="true"><FaLinkedinIn /></span> LinkedIn</span><span aria-hidden="true">↗</span></a>
+        <a href="mailto:lesliechiunda@outlook.com"><span className="contact-label"><span className="contact-icon" aria-hidden="true"><FaEnvelope /></span> lesliechiunda@outlook.com</span><span aria-hidden="true">↗</span></a>
       </div>
       <div className="footer-bottom">
         <p>Johannesburg, South Africa</p>
@@ -109,7 +108,7 @@ export const workGroups = [
 
 export type WorkGroup = typeof workGroups[number];
 
-function groupForProject(project: Project): WorkGroup {
+function groupForProject(project: Pick<Project, "title" | "category">): WorkGroup {
   const value = `${project.title} ${project.category}`.toLowerCase();
   if (value.includes("e-commerce") || value.includes("fashion") || value.includes("beauty") || value.includes("booking")) return "E-commerce & bookings";
   if (value.includes("loyalty") || value.includes("system") || value.includes("automation")) return "Systems & automation";
@@ -118,24 +117,22 @@ function groupForProject(project: Project): WorkGroup {
 
 async function unifiedProjects() {
   const [portfolio, businesses] = await Promise.all([listPortfolioProjects(), listBusinesses()]);
-  const liveBusinessUrls: Record<string, string> = {
-    "don-armando": "https://donarmandorestaurants-demo.lesliechiunda.com/",
-    mctrenz: "https://mctrenz.co.za/",
-    cataplana: "https://cataplanaportuguese-demo.lesliechiunda.com/",
+  const suppliedScreenshots: Record<string, string> = {
+    "don-armando": "/concept-don-armando.jpg", cataplana: "/concept-cataplana.jpg", mctrenz: "/concept-mctrenz.jpg",
   };
   const businessProjects = businesses.filter((business) => business.previewStatus !== "archived").map((business) => ({
     title: business.name,
     category: "Business website",
     summary: business.summary,
-    href: liveBusinessUrls[business.slug] || business.previewUrl || business.website || "#",
-    image: business.heroAssetId ? `/api/media/${business.heroAssetId}` : `/concept-${business.slug}.jpg`,
+    href: business.previewUrl || business.website || "/work",
+    image: business.heroAssetId ? `/api/media/${business.heroAssetId}` : suppliedScreenshots[business.slug],
     tone: "clay" as const,
     featured: business.featured,
     group: "Business websites" as WorkGroup,
   }));
   return [
     ...businessProjects,
-    ...portfolio.map((project) => ({ ...project, group: groupForProject(project) })),
+    ...portfolio.map((project) => ({ ...project, image: project.image ?? undefined, tone: project.tone as Project["tone"], group: groupForProject(project) })),
   ];
 }
 

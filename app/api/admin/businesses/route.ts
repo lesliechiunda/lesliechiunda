@@ -23,6 +23,9 @@ export async function POST(request: Request) {
       city: typeof body.city === "string" ? body.city.slice(0, 80) : "",
       headline: typeof body.headline === "string" ? body.headline.slice(0, 180) : "",
       summary: typeof body.summary === "string" ? body.summary.slice(0, 1200) : "",
+      previewUrl: typeof body.previewUrl === "string" && body.previewUrl.trim() ? body.previewUrl.trim().slice(0, 500) : null,
+      previewStatus: "live",
+      featured: body.featured === true,
       source: "manual",
     });
     return NextResponse.json({ business }, { status: 201 });

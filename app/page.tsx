@@ -33,10 +33,9 @@ export default function Home() {
         <SectionHeading
           index="01"
           eyebrow="Selected work"
-          link={{ href: "/work", label: "View all projects" }}
+          link={{ href: "/work", label: "View more" }}
         >
-          Built for the real world,
-          <br />not the pitch deck.
+          My work.
         </SectionHeading>
         <ProjectGrid featured />
       </section>
