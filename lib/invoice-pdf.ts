@@ -124,7 +124,8 @@ export async function createInvoicePdf(invoice: InvoiceRecord): Promise<Uint8Arr
   page.drawRectangle({ x: 367, y: y - 15, width: 180, height: 43, color: accent });
   text("TOTAL ZAR", 380, y + 1, 10, true);
   right(formatRand(invoice.totalCents), pageWidth - 59, y + 1, 13, true);
-  if (invoice.notes.trim()) {
+  const drawNotes = () => {
+    if (!invoice.notes.trim()) return;
     y -= 72;
     if (y < 125) { page = document.addPage([pageWidth, pageHeight]); header(true); y = pageHeight - 125; }
     text("NOTES", 48, y, 8, true, muted);
@@ -133,7 +134,8 @@ export async function createInvoicePdf(invoice: InvoiceRecord): Promise<Uint8Arr
       if (y < 102) { page = document.addPage([pageWidth, pageHeight]); header(true); y = pageHeight - 125; }
       text(line, 48, y, 9); y -= 14;
     }
-  }
+  };
+  drawNotes();
   for (const sheet of document.getPages()) {
     sheet.drawLine({ start: { x: 48, y: 72 }, end: { x: pageWidth - 48, y: 72 }, thickness: 0.7, color: light });
     sheet.drawText("lesliechiunda@outlook.com  |  +27 79 403 1161", { x: 48, y: 54, size: 8, font: regular, color: muted });
