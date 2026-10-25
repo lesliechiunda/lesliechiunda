@@ -13,7 +13,8 @@ export async function POST(request: Request) {
   if (typeof body.name !== "string" || !body.name.trim()) {
     return NextResponse.json({ error: "Business name is required." }, { status: 400 });
   }
-  const slug = cleanSlug(typeof body.slug === "string" && body.slug ? body.slug : body.name);
+  const requestedSlug = typeof body.slug === "string" ? body.slug : "";
+  const slug = cleanSlug(requestedSlug || body.name);
   if (!slug) return NextResponse.json({ error: "A valid slug is required." }, { status: 400 });
   try {
     const business = await createBusiness({
@@ -23,6 +24,9 @@ export async function POST(request: Request) {
       city: typeof body.city === "string" ? body.city.slice(0, 80) : "",
       headline: typeof body.headline === "string" ? body.headline.slice(0, 180) : "",
       summary: typeof body.summary === "string" ? body.summary.slice(0, 1200) : "",
+      previewUrl: typeof body.previewUrl === "string" && body.previewUrl.trim() ? body.previewUrl.trim().slice(0, 500) : null,
+      previewStatus: "live",
+      featured: body.featured === true,
       source: "manual",
     });
     return NextResponse.json({ business }, { status: 201 });

@@ -4,9 +4,7 @@ import { getAdminForApi } from "../../../../../lib/admin-auth";
 import { deleteBusiness, updateBusiness } from "../../../../../lib/repository";
 
 const allowed = new Set([
-  "name", "slug", "industry", "city", "website", "websiteStatus", "previewStatus", "previewUrl",
-  "outreachStatus", "approvalStatus", "priority", "featured", "contactName", "contactEmail", "contactPhone",
-  "eyebrow", "headline", "summary", "services", "notes",
+  "name", "slug", "industry", "city", "previewStatus", "previewUrl", "featured", "summary", "notes",
 ]);
 
 export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -26,7 +24,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
     return NextResponse.json({ error: "Slug must use lowercase letters, numbers and hyphens." }, { status: 400 });
   }
   try {
-    const business = await updateBusiness((await context.params).id, values, admin.email);
+    const business = await updateBusiness((await context.params).id, values);
     if (!business) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json({ business });
   } catch {
