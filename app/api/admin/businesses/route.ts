@@ -13,7 +13,8 @@ export async function POST(request: Request) {
   if (typeof body.name !== "string" || !body.name.trim()) {
     return NextResponse.json({ error: "Business name is required." }, { status: 400 });
   }
-  const slug = cleanSlug(typeof body.slug === "string" && body.slug ? body.slug : body.name);
+  const requestedSlug = typeof body.slug === "string" ? body.slug : "";
+  const slug = cleanSlug(requestedSlug || body.name);
   if (!slug) return NextResponse.json({ error: "A valid slug is required." }, { status: 400 });
   try {
     const business = await createBusiness({

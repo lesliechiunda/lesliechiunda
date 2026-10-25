@@ -1,4 +1,4 @@
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb, type PDFFont } from "pdf-lib";
 import { formatRand, getInvoiceLines } from "./invoice";
 import type { InvoiceRecord } from "./repository";
 
@@ -9,6 +9,29 @@ const muted = rgb(0.40, 0.44, 0.40);
 const light = rgb(0.89, 0.91, 0.86);
 const accent = rgb(0.79, 0.95, 0.42);
 const safe = (value: string) => value.normalize("NFKD").replace(/[\u2010-\u2015]/g, "-").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').replace(/[^\x20-\x7e\n]/g, "");
+
+function wrapText(value: string, maxWidth: number, size: number, font: PDFFont): string[] {
+  const words = safe(value).split(/\s+/).filter(Boolean).flatMap((word) => {
+    if (font.widthOfTextAtSize(word, size) <= maxWidth) return [word];
+    const parts: string[] = [];
+    let part = "";
+    for (const character of word) {
+      if (font.widthOfTextAtSize(part + character, size) > maxWidth && part) { parts.push(part); part = ""; }
+      part += character;
+    }
+    if (part) parts.push(part);
+    return parts;
+  });
+  const lines: string[] = [];
+  let current = "";
+  for (const word of words) {
+    const candidate = current ? `${current} ${word}` : word;
+    if (font.widthOfTextAtSize(candidate, size) <= maxWidth) current = candidate;
+    else { if (current) { lines.push(current); } current = word; }
+  }
+  if (current) lines.push(current);
+  return lines;
+}
 
 export async function createInvoicePdf(invoice: InvoiceRecord): Promise<Uint8Array> {
   const document = await PDFDocument.create();
@@ -30,29 +53,7 @@ export async function createInvoicePdf(invoice: InvoiceRecord): Promise<Uint8Arr
     text(label, x - font.widthOfTextAtSize(label, size), top, size, strong, colour);
   };
   const rule = (top: number) => page.drawLine({ start: { x: 48, y: top }, end: { x: pageWidth - 48, y: top }, thickness: 0.7, color: light });
-  const wrap = (value: string, maxWidth: number, size: number, strong = false) => {
-    const font = strong ? bold : regular;
-    const words = safe(value).split(/\s+/).filter(Boolean).flatMap((word) => {
-      if (font.widthOfTextAtSize(word, size) <= maxWidth) return [word];
-      const parts: string[] = [];
-      let part = "";
-      for (const character of word) {
-        if (font.widthOfTextAtSize(part + character, size) > maxWidth && part) { parts.push(part); part = ""; }
-        part += character;
-      }
-      if (part) parts.push(part);
-      return parts;
-    });
-    const lines: string[] = [];
-    let current = "";
-    for (const word of words) {
-      const candidate = current ? `${current} ${word}` : word;
-      if (font.widthOfTextAtSize(candidate, size) <= maxWidth) current = candidate;
-      else { if (current) lines.push(current); current = word; }
-    }
-    if (current) lines.push(current);
-    return lines;
-  };
+  const wrap = (value: string, maxWidth: number, size: number, strong = false) => wrapText(value, maxWidth, size, strong ? bold : regular);
   const header = (continuation = false) => {
     page.drawRectangle({ x: 48, y: pageHeight - 71, width: 35, height: 35, color: dark });
     text("LC", 56, pageHeight - 60, 15, true, accent);

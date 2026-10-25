@@ -130,7 +130,7 @@ export default function AdminWork({ initialBusinesses, initialProjects }: { init
       setBusinesses((items) => items.map((item) => item.id === selectedBusiness.id ? { ...item, heroAssetId: assetId } : item));
       setMessage("Image saved to this work item.");
     } catch (error) { setMessage(error instanceof Error ? error.message : "Image upload failed."); }
-    finally { if (fileInput.current) fileInput.current.value = ""; setBusy(false); }
+    finally { if (fileInput.current) { fileInput.current.value = ""; } setBusy(false); }
   }
 
   async function removeImage() {
